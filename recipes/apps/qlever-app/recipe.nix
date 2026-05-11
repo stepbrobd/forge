@@ -92,7 +92,6 @@
           mypkgs.qlever-control
           unzip
         ];
-        composeFile = ./compose.yaml;
         extraConfig = {
           WorkingDir = "/var/lib/qlever";
         };

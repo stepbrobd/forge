@@ -109,7 +109,6 @@
           pkgs.mypkgs.mox # required for admin tasks
           pkgs.shadow # required for useradd
         ];
-        composeFile = ./compose.yaml;
       };
 
       nixos = {

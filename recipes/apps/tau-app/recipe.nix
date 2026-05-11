@@ -67,7 +67,6 @@
         packages = [
           pkgs.mypkgs.tau-tower
         ];
-        composeFile = ./compose.yaml;
       };
 
       nixos = {

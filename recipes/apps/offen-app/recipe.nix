@@ -65,7 +65,6 @@
           pkgs.coreutils # required for mkdir
           pkgs.mypkgs.offen # required for admin tasks
         ];
-        composeFile = ./compose.yaml;
       };
 
       nixos = {
