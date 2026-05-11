@@ -39,6 +39,8 @@
             setup
             extraConfig
           ];
+          # Pass entropy from host to VM to prevent slow service startup due to entropy starvation.
+          virtualisation.qemu.options = [ "-device virtio-rng-pci" ];
           system.stateVersion = "25.11";
           environment.systemPackages = app.programs.packages ++ config.packages;
         };

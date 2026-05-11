@@ -21,6 +21,9 @@
       memorySize
       ;
 
+    # Pass entropy from host to VM to prevent slow service startup due to entropy starvation.
+    qemu.options = [ "-device virtio-rng-pci" ];
+
     forwardPorts = map (
       portRange:
       if builtins.isString portRange then
