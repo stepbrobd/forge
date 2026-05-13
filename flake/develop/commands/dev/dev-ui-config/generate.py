@@ -112,7 +112,7 @@ def main():
             sys.argv[3] if len(sys.argv) > 3 else "ui/build/forge-config.json"
         )
     except (ValueError, IndexError):
-        print("Usage: mock-forge-config <num_apps> <num_packages> <out_path>")
+        print("Usage: dev-ui-config <num_apps> <num_packages> <out_path>")
         sys.exit(1)
 
     git_root = Path(
@@ -190,7 +190,8 @@ def main():
         run_command(
             ["git", "commit", "-m", "gen mock recipes"],
             cwd=str(temp_path),
-            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
         )
 
         try:
@@ -208,7 +209,7 @@ def main():
 
     tmp_dir = git_root / "ui/build/.tmp"
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    real_file = tmp_dir / "mock-forge-config.json"
+    real_file = tmp_dir / "dev-ui-config.json"
     with open(real_file, "w") as f:
         f.write(config_text)
 
