@@ -8,7 +8,7 @@
 {
   name = "ironcalc-app";
   displayName = "IronCalc";
-  description = "Open source selfhosted spreadsheet engine";
+  description = "Open source selfhosted spreadsheet engine.";
 
   usage = ''
     IronCalc is an Open source spreadsheet engine and ecosystem.
