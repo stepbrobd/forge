@@ -124,7 +124,7 @@
       nixos = {
         enable = true;
         setup = config.services.runtimes.container.components.qlever-ui.setup;
-        extraConfig = {
+        nixosConfig = {
           systemd.services."qlever-app-setup" = {
             path = with pkgs; [
               rsync
