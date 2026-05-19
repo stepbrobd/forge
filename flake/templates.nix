@@ -6,7 +6,7 @@
     };
     provider = {
       path = ../templates/provider;
-      description = "Template for self hosting you own NGI Forge instance";
+      description = "Template for self hosting your own NGI Forge instance";
     };
   };
 }
