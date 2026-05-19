@@ -35,14 +35,15 @@
           "-C"
           "${./goupile.ini}"
         ];
+        ports = [ "8181:8181" ];
       };
     };
 
     runtimes = {
       container = {
         enable = true;
-        packages = [ pkgs.goupile ];
         composeFile = ./compose.yaml;
+        components.goupile.packages = [ pkgs.goupile ];
       };
 
       nixos = {
@@ -54,8 +55,6 @@
         };
       };
     };
-
-    ports = [ "8181:8181" ];
   };
 
   test = {

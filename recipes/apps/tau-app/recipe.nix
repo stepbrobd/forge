@@ -57,12 +57,16 @@
         source = ./config.toml;
         path = "tau/tower.toml";
       };
+      ports = [
+        "3001:3001"
+        "3002:3002"
+      ];
     };
 
     runtimes = {
       container = {
         enable = true;
-        packages = [
+        components.tau-tower.packages = [
           pkgs.mypkgs.tau-tower
         ];
       };
@@ -74,11 +78,6 @@
         ];
       };
     };
-
-    ports = [
-      "3001:3001"
-      "3002:3002"
-    ];
   };
 
   test.script = ''

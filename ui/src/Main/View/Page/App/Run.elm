@@ -366,7 +366,7 @@ viewPageAppRunContainer model pageApp =
 viewPageAppRunContainerBuildOCI : Model -> PageApp -> Html Update
 viewPageAppRunContainerBuildOCI model pageApp =
     details []
-        [ summary [] [ text "Build container image manually" ]
+        [ summary [] [ text "Build container images manually" ]
         , br [] []
         , codeBlock <|
             case model.model_preferences.preferences_install of
@@ -380,7 +380,7 @@ viewPageAppRunContainerBuildOCI model pageApp =
                             , ".container"
                             ]
                         , ""
-                        , "./result/bin/build-oci-image"
+                        , "./result/bin/build-oci-images"
                         ]
 
                 PreferencesInstall_NixTraditional ->
@@ -393,7 +393,7 @@ viewPageAppRunContainerBuildOCI model pageApp =
                         , ".container"
                         , "' \n"
                         , "\n"
-                        , "./result/bin/build-oci-image"
+                        , "./result/bin/build-oci-images"
                         ]
         ]
 

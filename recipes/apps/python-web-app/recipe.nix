@@ -54,16 +54,15 @@
     components = {
       python-web = {
         command = pkgs.mypkgs.python-web;
+        ports = [ "5000:5000" ];
       };
     };
 
     runtimes = {
       container = {
         enable = true;
-        packages = [ pkgs.mypkgs.python-web ];
-        # Alternatively, we can re-use attributes with `config`:
-        #packages = [ config.services.python-web.command ];
         composeFile = ./compose.yaml;
+        components.python-web.packages = [ pkgs.mypkgs.python-web ];
       };
 
       nixos = {
@@ -80,8 +79,6 @@
         };
       };
     };
-
-    ports = [ "5000:5000" ];
   };
 
   test = {

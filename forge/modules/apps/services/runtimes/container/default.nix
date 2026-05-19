@@ -11,31 +11,50 @@
   options = {
     enable = lib.mkEnableOption "container image output";
 
-    setup = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Script to run once at startup.";
-    };
-
-    packages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      description = "List of packages to add to the container's `/bin` directory.";
-    };
-
-    # NOTE: config is reserved by the module system
-    extraConfig = lib.mkOption {
-      type = with lib.types; lazyAttrsOf anything;
-      default = { };
-      description = ''
-        OCI image configuration as specified in <https://specs.opencontainers.org/image-spec/config/#properties>.
-      '';
-    };
-
     composeFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
       description = "Path to the application container's compose file. When null, a default compose file is generated.";
+    };
+
+    components = lib.mkOption {
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = {
+            setup = lib.mkOption {
+              type = lib.types.str;
+              default = "";
+              description = "Script to run once at container startup.";
+            };
+
+            packages = lib.mkOption {
+              type = lib.types.listOf lib.types.package;
+              default = [ ];
+              description = "List of packages to add to the container's `/bin` directory.";
+            };
+
+            # NOTE: config is reserved by the module system
+            extraConfig = lib.mkOption {
+              type = with lib.types; lazyAttrsOf anything;
+              default = { };
+              description = ''
+                OCI image configuration as specified in <https://specs.opencontainers.org/image-spec/config/#properties>.
+              '';
+            };
+          };
+        }
+      );
+      default = { };
+      description = "Per-component container configuration.";
+      apply =
+        self:
+        let
+          knownComponents = lib.attrNames app.services.components;
+          unknownComponents = lib.subtractLists knownComponents (lib.attrNames self);
+        in
+        lib.throwIf (unknownComponents != [ ])
+          "services.runtimes.container.components: unknown component(s): ${lib.concatStringsSep ", " unknownComponents}. Must be one of: ${lib.concatStringsSep ", " knownComponents}"
+          self;
     };
 
     result = {
@@ -45,16 +64,16 @@
         description = "Nimi configuration.";
       };
 
-      eval = lib.mkOption {
+      evals = lib.mkOption {
         internal = true;
         readOnly = true;
         type = with lib.types; lazyAttrsOf (either attrs anything);
         description = "Nimi module evaluation.";
       };
 
-      recipe = lib.mkOption {
+      recipes = lib.mkOption {
         internal = true;
-        type = lib.types.nullOr lib.types.package;
+        type = with lib.types; lazyAttrsOf (nullOr package);
         default = null;
         description = "Script that builds container image recipe.";
       };
@@ -79,14 +98,26 @@
   };
 
   config = {
-    result.modules = {
-      settings = import ./modules/settings.nix args;
-      services = import ./modules/services.nix args;
-    };
+    result.modules = lib.mapAttrs (serviceName: service: {
+      settings = import ./modules/settings.nix (
+        {
+          inherit service;
+        }
+        // args
+        // lib.optionalAttrs (config.components ? ${serviceName}) {
+          componentConfig = config.components.${serviceName};
+        }
+      );
+      services = import ../mkNimiImports.nix { inherit lib service serviceName; };
+    }) app.services.components;
 
-    result.eval = nimi.passthru.evalNimiModule { config = config.result.modules; };
+    result.evals = lib.mapAttrs (
+      name: value: nimi.passthru.evalNimiModule { config = config.result.modules.${name}; }
+    ) app.services.components;
 
-    result.recipe = nimi.mkContainerImage { config = config.result.modules; };
+    result.recipes = lib.mapAttrs (
+      name: value: nimi.mkContainerImage { config = config.result.modules.${name}; }
+    ) app.services.components;
 
     result.build =
       let
@@ -96,30 +127,43 @@
           else
             pkgs.writeText "${app.name}-compose.yaml" (
               lib.generators.toYAML { } {
-                services.${app.name} = {
-                  image = "localhost/${app.name}:latest";
-                }
-                // lib.optionalAttrs (app.services.ports != [ ]) {
-                  ports = app.services.ports;
-                };
+                services = lib.mapAttrs (name: service: {
+                  image = "localhost/${name}:latest";
+                  ports = service.ports;
+                }) app.services.components;
               }
             );
-        build-oci-image = pkgs.writeShellScriptBin "build-oci-image" ''
-          ${config.result.recipe.copyTo}/bin/copy-to \
-            oci-archive:${app.name}.tar:${app.name}:latest
-          echo "Container image created in $(pwd)/${app.name}.tar ."
-        '';
+
+        build-oci-images = pkgs.writeShellScriptBin "build-oci-images" (
+          lib.concatMapAttrsStringSep "\n" (name: value: ''
+            ${value.copyTo}/bin/copy-to oci-archive:${name}.tar:${name}:latest
+            echo "Created container image in $(pwd)/${name}.tar"
+          '') config.result.recipes
+        );
+
         compose-file = pkgs.runCommand "compose-file" { } ''
-          mkdir -p $out/${app.name}
-          cp ${effectiveComposeFile} $out/${app.name}/compose.yaml
+          install -D ${effectiveComposeFile} $out/${app.name}/compose.yaml
         '';
+
         run-podman = pkgs.writeShellScriptBin "run-podman" ''
-          ${lib.getExe build-oci-image}
-          podman load <${app.name}.tar
+          TMPDIR=$(mktemp -d)
+
+          trap 'rm -rf "$TMPDIR"' EXIT
+
+          pushd $TMPDIR
+            ${lib.getExe build-oci-images}
+
+            for image in *.tar; do
+              podman load < "$image"
+              rm "$image"
+            done
+          popd
+
           ${lib.getExe pkgs.podman-compose} \
             -f ${compose-file}/${app.name}/compose.yaml \
             up --force-recreate "$@"
         '';
+
         run-container = pkgs.writeShellScriptBin "run-container" ''
           ${lib.getExe run-podman} "$@"
         '';
@@ -127,7 +171,7 @@
       pkgs.symlinkJoin {
         name = "run-container";
         paths = [
-          build-oci-image
+          build-oci-images
           compose-file
           run-podman
           run-container
