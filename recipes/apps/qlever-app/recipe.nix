@@ -91,7 +91,7 @@
             rsync
             subversion
           ];
-          extraConfig = {
+          imageConfig = {
             WorkingDir = "/var/lib/qlever";
           };
           setup =
@@ -115,7 +115,7 @@
             mypkgs.qlever
             mypkgs.qlever-control
           ];
-          extraConfig = {
+          imageConfig = {
             WorkingDir = "/var/lib/qlever";
           };
         };
