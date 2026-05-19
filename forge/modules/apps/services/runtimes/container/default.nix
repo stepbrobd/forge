@@ -33,12 +33,18 @@
               description = "List of packages to add to the container's `/bin` directory.";
             };
 
-            # NOTE: config is reserved by the module system
-            extraConfig = lib.mkOption {
+            imageConfig = lib.mkOption {
               type = with lib.types; lazyAttrsOf anything;
               default = { };
               description = ''
-                OCI image configuration as specified in <https://specs.opencontainers.org/image-spec/config/#properties>.
+                OCI image configuration.
+
+                Available options: <https://specs.opencontainers.org/image-spec/config/#properties>
+              '';
+              example = lib.literalExpression ''
+                {
+                  WorkingDir = "/var/lib/myapp";
+                }
               '';
             };
           };

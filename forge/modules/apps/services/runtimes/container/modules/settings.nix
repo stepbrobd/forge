@@ -5,7 +5,7 @@
   componentConfig ? {
     setup = "";
     packages = [ ];
-    extraConfig = { };
+    imageConfig = { };
   },
   pkgs,
   lib,
@@ -21,13 +21,13 @@
       pathsToLink = [ "/bin" ];
     };
 
-    imageConfig = componentConfig.extraConfig // {
+    imageConfig = componentConfig.imageConfig // {
       Env =
         let
           # { K = "V"; } -> [ "K=V" ]
           envAttrsToList = attrs: lib.mapAttrsToList (n: v: "${n}=${v}") attrs;
 
-          # extraConfig.Env follows OCI spec: list of "K=V" strings
+          # imageConfig.Env follows OCI spec: list of "K=V" strings
           containerEnv = lib.listToAttrs (
             map (
               envPair:
@@ -38,7 +38,7 @@
                 name = lib.head parts;
                 value = lib.concatStringsSep "=" (lib.tail parts);
               }
-            ) (componentConfig.extraConfig.Env or [ ])
+            ) (componentConfig.imageConfig.Env or [ ])
           );
 
           # NOTE: we merge Attrs to remove duplicate keys
