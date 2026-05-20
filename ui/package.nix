@@ -4,10 +4,12 @@
   jq,
   symlinkJoin,
 
+  appIcons,
+
   _forge-config,
   _forge-docs,
   _forge-options,
-  appIcons,
+  highlight-js,
   ...
 }:
 
@@ -29,6 +31,7 @@ let
 
   bootstrapCss = fetchzip rec {
     pname = "bootstrap";
+    # TODO updateScript
     version = "5.3.8";
     url = "https://github.com/twbs/bootstrap/releases/download/v${version}/bootstrap-${version}-dist.zip";
     hash = "sha256-StRhHJIRGzguLlo0BGOAMy0PCCmMovzgU/5xZJgVrqQ=";
@@ -47,6 +50,8 @@ symlinkJoin {
     cp -aR ${./src/js}/. js
     chmod -R u+w css js
     install -D ${bootstrapCss}/css/bootstrap.min.css bootstrap/css/bootstrap.min.css
+    install -D ${highlight-js}/highlight.min.js js/highlight.min.js
+    install -D ${highlight-js}/theme.css css/highlightjs-theme.css
 
     # Rename minimized Elm output
     mv js/Elm.min.js js/Elm.js
