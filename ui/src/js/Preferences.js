@@ -26,7 +26,7 @@ const getPreferences = () => {
 };
 
 const initPreferences = (app) => {
-  // Hack: remove initally set background color to avoid white flash when page reloads
+  // Hack: remove initially set background color to avoid white flash when page reloads
   document.body.classList.remove("initial-bg-color");
 
   initDefaultPreferences();
