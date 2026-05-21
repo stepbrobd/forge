@@ -137,7 +137,7 @@
           fi
         '';
         packages = [ pkgs.mypkgs.mox ];
-        extraConfig = {
+        nixosConfig = {
           networking.enableIPv6 = false;
           # Use a public DNSSEC-validating resolver
           networking.nameservers = [ "8.8.8.8" ];

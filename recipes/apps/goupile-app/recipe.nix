@@ -48,7 +48,7 @@
 
       nixos = {
         enable = true;
-        extraConfig = {
+        nixosConfig = {
           systemd.tmpfiles.rules = [
             "d /var/lib/goupile 0700 root root -"
           ];

@@ -108,7 +108,7 @@ in
                       m.setup
                       m.nimi
                       m.packages
-                      m.extraConfig
+                      m.nixosConfig
                     ];
                 };
                 nixos = {

@@ -37,7 +37,7 @@
           imports = with app.services.runtimes.nixos.result.modules; [
             nimi
             setup
-            extraConfig
+            nixosConfig
           ];
           # Pass entropy from host to VM to prevent slow service startup due to entropy starvation.
           virtualisation.qemu.options = [ "-device virtio-rng-pci" ];

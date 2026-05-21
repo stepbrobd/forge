@@ -32,12 +32,12 @@
         List of packages to add to the NixOS system.
 
         This is a convenience option equivalent to setting
-        `extraConfig.environment.systemPackages`.
+        `nixosConfig.environment.systemPackages`.
       '';
       example = lib.literalExpression "[ pkgs.btop ]";
     };
 
-    extraConfig = lib.mkOption {
+    nixosConfig = lib.mkOption {
       type = with lib.types; deferredModule;
       default = { };
       description = ''
@@ -115,7 +115,7 @@
       setup = import ./modules/setup.nix args;
       nimi = import ./modules/nimi.nix args;
       virt = import ./modules/virt.nix args;
-      extraConfig = config.extraConfig;
+      nixosConfig = config.nixosConfig;
       packages = {
         environment.systemPackages = config.packages;
       };

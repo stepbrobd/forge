@@ -490,10 +490,11 @@ Apps can optionally specify a custom icon in SVG format. When creating app recip
 Services define processes that run within the application. They can be used across all output types (container, VM, etc.):
 
 ```nix
-services = {
+services.components = {
   my-service = {
     command = pkgs.mypkgs.my-package;  # Package or string
     argv = [ "--port" "8080" ];        # Additional arguments
+    ports = [ "8080:8080" ];           # HOST_PORT:SERVICE_PORT
     environment = {                     # Environment variables
       DATABASE_URL = "postgresql://localhost/db";
       LOG_LEVEL = "info";
@@ -503,6 +504,7 @@ services = {
   another-service = {
     command = "python";
     argv = [ "-m" "http.server" "8000" ];
+    ports = [ "8000:8000" ];
   };
 };
 ```
@@ -537,29 +539,31 @@ programs = {
 Builds a single OCI-compliant container image:
 
 ```nix
-container = {
+runtimes.container = {
   enable = true;  # Set to true to enable container image output
-  tag = "latest";  # Optional, defaults to "latest"
 
-  packages = [
-    pkgs.mypkgs.my-package  # Packages to include in /bin
-  ];
+  composeFile = ./compose.yaml;  # Optional: custom Docker Compose file
 
-  # OCI image configuration
-  # See: https://specs.opencontainers.org/image-spec/config/#properties
-  extraConfig = {
-    Cmd = [ "my-package" "--serve" ];  # Default command
-    Env = [                             # Environment variables
-      "PORT=8080"
-      "LOG_LEVEL=info"
+  # Per-component container configuration
+  components.<name> = {
+    packages = [
+      pkgs.mypkgs.my-package  # Packages to include in /bin
     ];
-    ExposedPorts = {
-      "8080/tcp" = { };
-    };
-    WorkingDir = "/app";
-  };
 
-  composeFile = ./compose.yaml;  # Optional: Docker Compose file
+    # OCI image configuration
+    # See: https://specs.opencontainers.org/image-spec/config/#properties
+    imageConfig = {
+      Cmd = [ "my-package" "--serve" ];  # Default command
+      Env = [                             # Environment variables
+        "PORT=8080"
+        "LOG_LEVEL=info"
+      ];
+      ExposedPorts = {
+        "8080/tcp" = { };
+      };
+      WorkingDir = "/app";
+    };
+  };
 };
 ```
 
@@ -572,12 +576,12 @@ container = {
 Builds a complete NixOS virtual machine:
 
 ```nix
-nixos = {
+runtimes.nixos = {
   enable = true;  # Set to true to enable VM output
 
   # NixOS system configuration
   # See: https://search.nixos.org/options
-  extraConfig = {
+  nixosConfig = {
     services.postgresql = {
       enable = true;
       enableTCPIP = true;
@@ -645,9 +649,10 @@ Each app output type can be independently enabled or disabled:
   '';
 
   # Define the web service
-  services.python-web = {
+  services.components.python-web = {
     command = pkgs.mypkgs.python-web;
     argv = [ "--host" "0.0.0.0" ];
+    ports = [ "5000:5000" ];
     environment = {
       FLASK_ENV = "production";
     };
@@ -667,21 +672,22 @@ Each app output type can be independently enabled or disabled:
   };
 
   # Container image
-  container = {
+  services.runtimes.container = {
     enable = true;
-    tag = "latest";
-    packages = [ pkgs.mypkgs.python-web ];
-    extraConfig = {
-      Env = [ "PORT=5000" ];
-      ExposedPorts = { "5000/tcp" = { }; };
-    };
     composeFile = ./compose.yaml;
+    components.python-web = {
+      packages = [ pkgs.mypkgs.python-web ];
+      imageConfig = {
+        Env = [ "PORT=5000" ];
+        ExposedPorts = { "5000/tcp" = { }; };
+      };
+    };
   };
 
   # VM with PostgreSQL
-  nixos = {
+  services.runtimes.nixos = {
     enable = true;
-    extraConfig = {
+    nixosConfig = {
       services.postgresql = {
         enable = true;
         enableTCPIP = true;

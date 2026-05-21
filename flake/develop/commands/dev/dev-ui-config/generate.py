@@ -92,7 +92,7 @@ def generate_app_recipe(name, index, is_test_app=False):
       }};
       nixos = {{
         enable = {nixos_vm_en};
-        extraConfig = {{ }};
+        nixosConfig = {{ }};
       }};
     }};
   }};

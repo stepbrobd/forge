@@ -70,7 +70,7 @@
 
       nixos = {
         enable = true;
-        extraConfig = {
+        nixosConfig = {
           # database service
           services.postgresql.enable = true;
           services.postgresql.enableTCPIP = true;

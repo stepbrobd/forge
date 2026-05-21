@@ -46,8 +46,7 @@
               example = lib.literalExpression "[ pkgs.curl ]";
             };
 
-            # NOTE: config is reserved by the module system
-            extraConfig = lib.mkOption {
+            imageConfig = lib.mkOption {
               type = with lib.types; lazyAttrsOf anything;
               default = { };
               description = ''
