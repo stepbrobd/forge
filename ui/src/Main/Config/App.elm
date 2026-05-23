@@ -271,9 +271,9 @@ type alias AppLinks =
 decodeAppLinks : Decoder AppLinks
 decodeAppLinks =
     Decode.map3 AppLinks
-        (Decode.maybe (Decode.at [ "docs", "url" ] Decode.string))
-        (Decode.maybe (Decode.at [ "source", "url" ] Decode.string))
-        (Decode.maybe (Decode.at [ "website", "url" ] Decode.string))
+        (Decode.maybe (Decode.field "docs" Decode.string))
+        (Decode.maybe (Decode.field "source" Decode.string))
+        (Decode.maybe (Decode.field "website" Decode.string))
 
 
 getAppServicesPorts : AppServices -> List String
