@@ -34,6 +34,7 @@ viewPageApp model pageApp =
                 [ viewPageAppResources model pageApp
                 , viewPageAppNgiGrants model pageApp
                 , viewPageAppConfiguration model pageApp
+                , viewPageAppMaintainers model pageApp
                 ]
             ]
         ]
@@ -215,7 +216,7 @@ viewPageAppResources model pageApp =
                 ]
                 []
             ]
-        , ul [ class "", style "padding-left" "10px" ]
+        , ul [ style "padding-left" "10px" ]
             (List.concat
                 [ viewPageAppResourcesItem "Homepage" pageApp.pageApp_app.app_links.appLinks_website
                 , viewPageAppResourcesItem "Documentation" pageApp.pageApp_app.app_links.appLinks_docs
@@ -223,6 +224,62 @@ viewPageAppResources model pageApp =
                 , viewPageAppResourcesItem "Forge Recipe" (Just (showAppRecipeLink model pageApp.pageApp_app))
                 ]
             )
+        ]
+
+
+viewPageAppMaintainers : Model -> PageApp -> Html msg
+viewPageAppMaintainers _ pageApp =
+    let
+        routeApp =
+            pageApp.pageApp_route
+    in
+    if List.isEmpty pageApp.pageApp_app.app_maintainers then
+        text ""
+
+    else
+        div
+            [ class "box-container target-highlight mb-3"
+            , id (showRouteAppFocus RouteAppFocus_Maintainers)
+            , tabindex -1
+            ]
+            [ h6
+                [ class "mt-3 mb-3 ms-2"
+                ]
+                [ text "Maintainers"
+                , a
+                    [ class "anchor-link"
+                    , href
+                        ({ routeApp | routeApp_focus = Just RouteAppFocus_Maintainers }
+                            |> Route_App
+                            |> routeToString
+                        )
+                    ]
+                    []
+                ]
+            , ul [ style "padding-left" "10px" ]
+                (List.map viewMaintainerItem pageApp.pageApp_app.app_maintainers)
+            ]
+
+
+maintainerGithubUrl : String -> String
+maintainerGithubUrl handle =
+    "https://github.com/" ++ handle
+
+
+viewMaintainerItem : Maintainer -> Html msg
+viewMaintainerItem m =
+    li [ class "list-group-item bg-transparent px-0 mb-1" ]
+        [ case m.maintainer_github of
+            Just handle ->
+                a
+                    [ href (maintainerGithubUrl handle)
+                    , target "_blank"
+                    , rel "noopener"
+                    ]
+                    [ text m.maintainer_name ]
+
+            Nothing ->
+                text m.maintainer_name
         ]
 
 

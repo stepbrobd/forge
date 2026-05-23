@@ -30,10 +30,22 @@
             pkgsOriginal = previousPkgs;
           }
         );
+        lib = lib // {
+          maintainers =
+            (import "${forge-inputs.nixpkgs}/maintainers/maintainer-list.nix")
+            // (if config.forge.maintainerList != null then import config.forge.maintainerList else { });
+        };
       };
       modules = [
         {
           options = {
+
+            maintainerList = lib.mkOption {
+              type = lib.types.nullOr lib.types.path;
+              default = null;
+              description = "Path to a maintainer list file in the format of Nixpkgs maintainer-list.nix.";
+              example = "./maintainers/maintainer-list.nix";
+            };
 
             repositoryUrl = lib.mkOption {
               type = lib.types.str;

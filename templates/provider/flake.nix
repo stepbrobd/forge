@@ -23,6 +23,7 @@
         {
           forge = {
             imports = [ (inputs.ngi-forge.inputs.import-tree ./recipes) ];
+            maintainerList = ./maintainers/maintainer-list.nix;
           };
         };
     };
