@@ -133,32 +133,20 @@ def main():
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
-        run_command(
-            [
-                "git",
-                "archive",
-                "--format=tar",
-                "HEAD",
-                "-o",
-                str(temp_path / "repo.tar"),
-            ],
-            cwd=str(git_root),
-            check=True,
-        )
-        run_command(["tar", "-xf", "repo.tar"], cwd=str(temp_path), check=True)
+        _ = shutil.copytree(git_root, temp_dir, dirs_exist_ok=True)
 
         mock_recipes_root = temp_path / "recipes"
         if mock_recipes_root.exists():
             shutil.rmtree(mock_recipes_root)
 
         apps_dir, pkgs_dir = mock_recipes_root / "apps", mock_recipes_root / "packages"
-        apps_dir.mkdir(parents=True), pkgs_dir.mkdir(parents=True)
+        _ = apps_dir.mkdir(parents=True), pkgs_dir.mkdir(parents=True)
 
         # Generate an unchanging test app
         test_app_name = "mock-test-app"
         (apps_dir / test_app_name).mkdir(parents=True)
         with open(apps_dir / test_app_name / "recipe.nix", "w") as f:
-            f.write(generate_app_recipe(test_app_name, 0, is_test_app=True))
+            _ = f.write(generate_app_recipe(test_app_name, 0, is_test_app=True))
 
         for i in range(num_apps):
             app_name = f"mock-{i}-app"
