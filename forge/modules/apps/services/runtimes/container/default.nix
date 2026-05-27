@@ -40,7 +40,7 @@
                   example = ''
                     # bash
                     echo "Creating directory structure ..."
-                    mkdir --parents /var/lib/service/config /var/lib/service/db
+                    mkdir --parents /var/lib/myservice/config /var/lib/myservice/db
                   '';
                 };
 
@@ -62,7 +62,7 @@
                   '';
                   example = lib.literalExpression ''
                     {
-                      WorkingDir = "/var/lib/myapp";
+                      WorkingDir = "/var/lib/myservice";
                     }
                   '';
                 };

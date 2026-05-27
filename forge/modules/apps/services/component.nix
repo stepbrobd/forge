@@ -105,7 +105,7 @@
 
         Defaults to `/var/lib/<service-name>`.
       '';
-      example = "/var/lib/myapp/data";
+      example = "/var/lib/myservice";
     };
 
     ports = lib.mkOption {
