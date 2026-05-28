@@ -14,6 +14,7 @@
       specialArgs = {
         inherit system;
         inputs = flakeInputs;
+        forgeConfig = config;
         pkgs = pkgs.extend (
           finalPkgs: previousPkgs:
           # Extend `pkgs` with the `packages` from the forge.

@@ -214,8 +214,12 @@
           install -D ${effectiveComposeFile} $out/${app.name}/compose.yaml
         '';
 
+        cacheDir = "\${XDG_CACHE_HOME:-$HOME/.cache}/ngi-forge/${builtins.hashString "md5" specialArgs.forgeConfig.forge.repositoryUrl}/tmp";
+
         run-podman = pkgs.writeShellScriptBin "run-podman" ''
-          TMPDIR=$(mktemp -d)
+          CACHE_DIR="${cacheDir}"
+          mkdir -p "$CACHE_DIR"
+          TMPDIR=$(mktemp -d -p "$CACHE_DIR")
 
           trap 'rm -rf "$TMPDIR"' EXIT
 
