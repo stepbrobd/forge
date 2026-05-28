@@ -102,8 +102,6 @@
       default = "/var/lib/${name}";
       description = ''
         Path to the service state directory.
-
-        Defaults to `/var/lib/<service-name>`.
       '';
       example = "/var/lib/myservice";
     };
