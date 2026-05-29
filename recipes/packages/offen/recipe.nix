@@ -20,7 +20,6 @@
     build.goPackageBuilder = {
       enable = true;
       vendorHash = "sha256-AeQa5oaOEB/50aPCRq702vMEtEctwP+jU5C6zB+3XR0=";
-      subPackages = [ "cmd/offen" ];
       ldflags = [
         "-s"
         "-w"
