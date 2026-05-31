@@ -1,4 +1,5 @@
 import { initClipboard } from "./Clipboard.js";
+import { registerIconFallbackonError } from "./IconFallback.js";
 import { initNavigation } from "./Navigation.js";
 import { getPreferences, initPreferences } from "./Preferences.js";
 import { initSmoothScroll } from "./SmoothScroll.js";
@@ -32,3 +33,4 @@ initNavigation({
 initPreferences(app);
 initSmoothScroll(app);
 initTitle(app);
+registerIconFallbackonError();
