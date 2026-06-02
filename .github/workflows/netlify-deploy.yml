@@ -216,14 +216,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          DEPLOY_ID=$(echo '{
+          DEPLOY_JSON=$(cat <<EOF
+          {
             "ref": "${PR_REV}",
             "environment": "Preview PR-${PR_NUMBER}",
             "description": "Netlify PR Preview",
             "transient_environment": true,
             "auto_merge": false,
             "required_contexts": []
-          }' | gh api --method POST repos/${{ github.repository }}/deployments --input - --jq '.id')
+          }
+          EOF
+          )
+
+          DEPLOY_ID=$(echo "$DEPLOY_JSON" | gh api --method POST repos/${{ github.repository }}/deployments --input - --jq '.id')
 
           echo "Created Deployment ID: $DEPLOY_ID"
 
