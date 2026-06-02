@@ -116,6 +116,13 @@
         description = "Script that builds container image.";
       };
 
+      shellRunner = lib.mkOption {
+        internal = true;
+        type = with lib.types; lazyAttrsOf (nullOr package);
+        default = { };
+        description = "Per-service bubblewrap-sandboxed runner.";
+      };
+
       # HACK:
       # Prevent toJSON conversion from attempting to convert the `eval` option,
       # which won't work because it's a whole NixOS evaluation.
@@ -153,6 +160,27 @@
       name: value:
       inputs.ngi-forge.inputs.nimi.packages.${system}.nimi.mkContainerImage {
         config = config.result.modules.${name};
+      }
+    ) app.services.components;
+
+    result.shellRunner = lib.mapAttrs (
+      serviceName: service:
+      let
+        componentPackages = service.packages;
+        runtimeComponentPackages = config.components.${serviceName}.packages or [ ];
+        binPaths = lib.makeBinPath ([ pkgs.coreutils ] ++ componentPackages ++ runtimeComponentPackages);
+      in
+      inputs.ngi-forge.inputs.nimi.packages.${system}.nimi.mkBwrap {
+        settings.bubblewrap.environment = service.environment // {
+          PATH = binPaths;
+        };
+        settings.bubblewrap.chdir = "/var/lib/${serviceName}";
+        settings.bubblewrap.unshare.user = false;
+        settings.bubblewrap.appendFlags = [
+          "--dir"
+          "/var/lib/${serviceName}"
+        ];
+        imports = [ { inherit (config.result.modules.${serviceName}) services settings; } ];
       }
     ) app.services.components;
 

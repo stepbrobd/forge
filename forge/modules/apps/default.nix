@@ -56,6 +56,7 @@
         }
         // lib.optionalAttrs app.services.runtimes.container.enable {
           container = app.services.runtimes.container.result.build;
+          services = app.services.runtimes.container.result.shellRunner;
         }
         // lib.optionalAttrs app.services.runtimes.nixos.enable {
           vm = app.services.runtimes.nixos.result.build;
