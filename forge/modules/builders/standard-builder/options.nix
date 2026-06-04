@@ -14,40 +14,6 @@
       For more information, see the
       [Nixpkgs stdenv documentation](https://nixos.org/manual/nixpkgs/unstable/#chap-stdenv)
     '';
-    packages = {
-      build = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of build-time dependencies needed during compilation (native
-          architecture).
-
-          Mapped to `nativeBuildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.cmake pkgs.pkg-config pkgs.ninja ]";
-      };
-      run = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of runtime dependencies needed by the package (target
-          architecture).
-
-          Mapped to `buildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.openssl pkgs.sqlite pkgs.zlib ]";
-      };
-      check = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of test dependencies needed to run the test suite.
-
-          Mapped to `nativeCheckInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.cunit ]";
-      };
-    };
 
     stdenv = lib.mkOption {
       type = lib.types.package;

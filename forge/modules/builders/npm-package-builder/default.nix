@@ -1,31 +1,23 @@
 {
-  lib,
-  config,
   pkgs,
-  sharedBuildAttrs,
+  packageBuilderModule,
   ...
 }:
 {
-  imports = [ ./options.nix ];
-  config = lib.mkIf config.build.npmPackageBuilder.enable {
-    result.derivation = pkgs.buildNpmPackage (
-      finalAttrs:
-      {
-        inherit (config) pname version;
-        inherit (config.build.npmPackageBuilder)
+  imports = [
+    ./options.nix
+    (packageBuilderModule {
+      builderName = "npmPackageBuilder";
+      mkDerivation = pkgs.buildNpmPackage;
+      attrs = builder: finalAttrs: previousAttrs: {
+        nativeBuildInputs = previousAttrs.nativeBuildInputs or [ ] ++ [
+          pkgs.nodejs
+        ];
+        inherit (builder)
           npmDepsHash
           npmInstallFlags
           ;
-        src = sharedBuildAttrs.pkgSource config;
-        patches = config.source.patches or [ ];
-        nativeBuildInputs = [ pkgs.nodejs ] ++ config.build.npmPackageBuilder.packages.build;
-        buildInputs = config.build.npmPackageBuilder.packages.run;
-        nativeCheckInputs = config.build.npmPackageBuilder.packages.check;
-        passthru = sharedBuildAttrs.pkgPassthru config finalAttrs.finalPackage;
-        meta = sharedBuildAttrs.pkgMeta config;
-      }
-      // config.build.extraAttrs
-      // lib.optionalAttrs config.build.debug sharedBuildAttrs.debugShellHookAttr
-    );
-  };
+      };
+    })
+  ];
 }

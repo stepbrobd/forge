@@ -13,40 +13,6 @@
       For more information, see the
       [Nixpkgs Go documentation](https://nixos.org/manual/nixpkgs/unstable/#sec-language-go)
     '';
-    packages = {
-      build = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of build-time dependencies needed during compilation (native
-          architecture).
-
-          Mapped to `nativeBuildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.pkg-config pkgs.installShellFiles ]";
-      };
-      run = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of runtime dependencies needed by the package (target architecture),
-          such as C libraries for cgo.
-
-          Mapped to `buildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.openssl pkgs.sqlite ]";
-      };
-      check = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of test dependencies needed to run the test suite.
-
-          Mapped to `nativeCheckInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.gotestsum ]";
-      };
-    };
     vendorHash = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = "";

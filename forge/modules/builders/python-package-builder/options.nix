@@ -25,28 +25,6 @@
         '';
         example = lib.literalExpression "[ pkgs.python3Packages.setuptools pkgs.python3Packages.wheel ]";
       };
-      build = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of non-Python native build-time dependencies needed during the
-          build, such as pkg-config or compilers.
-
-          Mapped to `nativeBuildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.pkg-config pkgs.cmake ]";
-      };
-      run = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of non-Python native runtime dependencies needed at runtime, such
-          as C libraries.
-
-          Mapped to `buildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.openssl pkgs.sqlite ]";
-      };
       dependencies = lib.mkOption {
         type = lib.types.listOf lib.types.package;
         default = [ ];
@@ -72,18 +50,6 @@
             redis = [ pkgs.python3Packages.redis ];
           }
         '';
-      };
-      check = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of test dependencies needed to run the test suite.
-
-          When non-empty, tests are automatically enabled (`doCheck = true`).
-
-          Mapped to `nativeCheckInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.python3Packages.pytestCheckHook ]";
       };
     };
     importsCheck = lib.mkOption {

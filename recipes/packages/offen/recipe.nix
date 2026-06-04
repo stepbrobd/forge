@@ -24,11 +24,10 @@
         "-s"
         "-w"
       ];
+      modRoot = "server";
     };
 
     build.extraAttrs = {
-      modRoot = "server";
-
       # Copy JS frontend assets into public/static before building.
       # Note: preBuild runs after configurePhase which cds into modRoot (server/).
       preBuild = ''

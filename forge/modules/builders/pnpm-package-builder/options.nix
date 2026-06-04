@@ -17,41 +17,6 @@
       [Nixpkgs Node.js documentation](https://nixos.org/manual/nixpkgs/unstable/#language-javascript)
     '';
 
-    packages = {
-      build = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of additional build-time dependencies needed during compilation (native architecture).
-
-          Node.js and pnpm are included automatically.
-
-          Mapped to `nativeBuildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.pkg-config ]";
-      };
-      run = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of runtime dependencies needed by the package (target architecture).
-
-          Mapped to `buildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.vips ]";
-      };
-      check = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of test dependencies needed to run the test suite.
-
-          Mapped to `nativeCheckInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.chromium ]";
-      };
-    };
-
     pnpm = lib.mkOption {
       type = lib.types.package;
       default = pkgs.pnpm_10;
@@ -106,14 +71,14 @@
     };
 
     installDir = lib.mkOption {
-      type = lib.types.str;
-      default = "dist";
+      type = with lib.types; nullOr str;
+      default = null;
       description = ''
-        Directory containing the build output to install into `$out`.
+        If not null, the directory containing the build output to install into `$out`.
 
         Mapped to `installDir`.
       '';
-      example = "build";
+      example = "dist";
     };
 
     sourceRoot = lib.mkOption {
