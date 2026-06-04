@@ -11,25 +11,26 @@
     lib.mkIf package.build.pnpmPackageBuilder.enable (
       let
         builderCfg = package.build.pnpmPackageBuilder;
-        src = sharedBuildAttrs.pkgSource package;
 
-        pnpmDeps = pkgs.fetchPnpmDeps (
-          {
-            inherit (package) pname version;
-            inherit src;
-            inherit (builderCfg) pnpm fetcherVersion;
-            hash = builderCfg.pnpmDepsHash;
-          }
-          // lib.optionalAttrs (builderCfg.sourceRoot != null) {
-            inherit (builderCfg) sourceRoot;
-          }
-        );
       in
       pkgs.stdenvNoCC.mkDerivation (
         finalAttrs:
+        let
+          pnpmDeps = pkgs.fetchPnpmDeps ({
+            inherit (finalAttrs)
+              pname
+              src
+              version
+              sourceRoot
+              ;
+            inherit (builderCfg) pnpm fetcherVersion;
+            hash = builderCfg.pnpmDepsHash;
+          });
+        in
         {
           inherit (package) pname version;
-          inherit src pnpmDeps;
+          inherit pnpmDeps;
+          src = sharedBuildAttrs.pkgSource package;
           patches = package.source.patches or [ ];
 
           nativeBuildInputs = [
