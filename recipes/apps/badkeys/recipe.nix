@@ -4,7 +4,7 @@
 }:
 {
   apps.badkeys = {
-    displayName = "badkeys";
+    displayName = "Badkeys";
     description = "Checking cryptographic public keys for known vulnerabilities.";
     usage = ''
       Download blocklist metadata.
