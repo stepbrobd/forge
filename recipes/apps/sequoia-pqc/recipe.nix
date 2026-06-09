@@ -14,7 +14,7 @@
       #### Generate a key
 
       ```bash
-      sq key generate --userid "Alice <alice@example.org>"
+      sq key generate --own-key --name 'alice' --email 'alice@example.com'
       ```
 
       #### Encrypt a file
@@ -34,8 +34,6 @@
       ```bash
       sq sign --signer-key alice.key message.txt
       ```
-
-      _Available in: shell._
     '';
 
     links = {
@@ -57,12 +55,6 @@
       runtimes.shell = {
         enable = true;
       };
-    };
-
-    test = {
-      script = ''
-        sq version
-      '';
     };
   };
 }

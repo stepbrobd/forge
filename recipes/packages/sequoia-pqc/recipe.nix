@@ -1,5 +1,6 @@
 {
   pkgs,
+  packages,
   ...
 }:
 
@@ -36,7 +37,7 @@
     };
 
     test.script = ''
-      sq version
+      sq version 2>&1 | grep 'sq ${packages.sequoia-pqc.version}'
     '';
   };
 }
