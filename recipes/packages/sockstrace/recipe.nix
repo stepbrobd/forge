@@ -36,8 +36,15 @@
       '';
     };
 
-    test.script = ''
-      sockstrace -horklump.program ls
-    '';
+    test = {
+      packages = [
+        pkgs.curl
+        pkgs.cacert
+      ];
+      script = ''
+        export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+        sockstrace -horklump.program curl -horklump.args https://example.com
+      '';
+    };
   };
 }
