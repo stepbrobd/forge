@@ -79,6 +79,7 @@
           {
             forge = {
               repositoryUrl = "github:ngi-nix/forge";
+              maintainerList = ./maintainers/maintainer-list.nix;
               recipeDirs = {
                 packages = "recipes/packages";
                 apps = "recipes/apps";

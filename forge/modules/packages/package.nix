@@ -63,6 +63,17 @@
       '';
       example = lib.literalExpression "[ lib.licenses.mit lib.licenses.asl20 ]";
     };
+    maintainers = lib.mkOption {
+      type = lib.types.listOf lib.types.anything;
+      default = [ ];
+      description = ''
+        A list of the maintainers of this package.
+
+        Maintainers needs to be either a Nixpkgs maintainer or a NGI Forge
+        maintainer defined in `maintainers/maintainer-list.nix` file.
+      '';
+      example = lib.literalExpression "with lib.maintainers; [ ngi-nix ]";
+    };
 
     # Source configuration
     source = {

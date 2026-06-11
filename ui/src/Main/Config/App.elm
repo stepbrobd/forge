@@ -16,6 +16,7 @@ type alias App =
     , app_ngi : Ngi
     , app_links : AppLinks
     , app_recipePath : String
+    , app_maintainers : List Maintainer
     }
 
 
@@ -32,6 +33,7 @@ decodeApp =
         |> Decode.andMap (Decode.field "ngi" decodeNgi)
         |> Decode.andMap (Decode.field "links" decodeAppLinks)
         |> Decode.andMap (Decode.field "recipePath" Decode.string)
+        |> Decode.andMap (Decode.field "maintainers" (Decode.list decodeMaintainer))
 
 
 type alias AppName =
@@ -283,3 +285,18 @@ getAppServicesPorts services =
     services.appServices_components
         |> Dict.toList
         |> List.concatMap (Tuple.second >> .appComponent_ports)
+
+
+type alias Maintainer =
+    { maintainer_name : String
+    , maintainer_github : Maybe String
+    , maintainer_email : Maybe String
+    }
+
+
+decodeMaintainer : Decoder Maintainer
+decodeMaintainer =
+    Decode.map3 Maintainer
+        (Decode.field "name" Decode.string)
+        (Decode.maybe (Decode.field "github" Decode.string))
+        (Decode.maybe (Decode.field "email" Decode.string))

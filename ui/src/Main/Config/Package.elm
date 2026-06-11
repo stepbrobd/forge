@@ -1,6 +1,8 @@
 module Main.Config.Package exposing (..)
 
 import Json.Decode as Decode exposing (Decoder)
+import Main.Config.App exposing (Maintainer, decodeMaintainer)
+import Main.Helpers.Json.Decode as Decode
 import Main.Helpers.String exposing (..)
 
 
@@ -13,20 +15,22 @@ type alias Package =
     , package_licenses : List PackageLicense
     , package_source : PackageSource
     , package_recipePath : String
+    , package_maintainers : List Maintainer
     }
 
 
 decodePackage : Decoder Package
 decodePackage =
-    Decode.map8 Package
-        (Decode.field "pname" Decode.string)
-        (Decode.field "description" Decode.string)
-        (Decode.field "version" Decode.string)
-        (Decode.field "homePage" Decode.string)
-        (Decode.field "mainProgram" Decode.string)
-        (Decode.field "license" decodeLicenses)
-        (Decode.field "source" decodeSource)
-        (Decode.field "recipePath" Decode.string)
+    Package
+        |> Decode.flipMap (Decode.field "pname" Decode.string)
+        |> Decode.andMap (Decode.field "description" Decode.string)
+        |> Decode.andMap (Decode.field "version" Decode.string)
+        |> Decode.andMap (Decode.field "homePage" Decode.string)
+        |> Decode.andMap (Decode.field "mainProgram" Decode.string)
+        |> Decode.andMap (Decode.field "license" decodeLicenses)
+        |> Decode.andMap (Decode.field "source" decodeSource)
+        |> Decode.andMap (Decode.field "recipePath" Decode.string)
+        |> Decode.andMap (Decode.field "maintainers" (Decode.list decodeMaintainer))
 
 
 type alias PackageName =

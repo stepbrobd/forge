@@ -80,6 +80,17 @@
       default = { };
       description = "NGI specific options.";
     };
+    maintainers = lib.mkOption {
+      type = lib.types.listOf lib.types.anything;
+      default = [ ];
+      description = ''
+        A list of the maintainers of this application.
+
+        Maintainers needs to be either a Nixpkgs maintainer or a NGI Forge
+        maintainer defined in `maintainers/maintainer-list.nix` file.
+      '';
+      example = lib.literalExpression "with lib.maintainers; [ ngi-nix ]";
+    };
 
     # Portable services configuration
     # https://nixos.org/manual/nixos/unstable/#modular-services
