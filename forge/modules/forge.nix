@@ -33,7 +33,7 @@
         lib = lib // {
           maintainers =
             (import "${forge-inputs.nixpkgs}/maintainers/maintainer-list.nix")
-            // (if config.forge.maintainerList != null then import config.forge.maintainerList else { });
+            // lib.optionalAttrs (config.forge.maintainerList != null) (import config.forge.maintainerList);
         };
       };
       modules = [
