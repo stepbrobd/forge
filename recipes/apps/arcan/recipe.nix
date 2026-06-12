@@ -32,6 +32,7 @@
       Entrust = [
         "Arcan-A12"
       ];
+      Commons = [ "Arcan-A12-endpoints" ];
     };
 
     programs = {

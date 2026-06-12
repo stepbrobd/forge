@@ -27,8 +27,9 @@
     icon = ./icon.svg;
 
     links = {
-      website = "https://slipshow.readthedocs.io/en/latest/";
+      docs = "https://docs.slipshow.org/en/stable/";
       source = "https://github.com/panglesd/slipshow";
+      website = "https://slipshow.org/";
     };
 
     ngi.grants = {

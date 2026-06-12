@@ -26,6 +26,7 @@
 
     links = {
       website = "https://ocamlpro.github.io/owi/";
+      docs = "https://ocamlpro.github.io/owi/manpages/owi.html";
       source = "https://github.com/ocamlpro/owi";
     };
 

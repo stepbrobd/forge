@@ -27,7 +27,7 @@
     icon = ./icon.svg;
 
     links = {
-      website = "https://gitlab.com/coroner/cryptolyzer";
+      source = "https://gitlab.com/coroner/cryptolyzer";
       docs = "https://cryptolyzer.readthedocs.io/en/latest/";
     };
 

@@ -16,6 +16,7 @@
 
     links = {
       website = "https://nyxt.atlas.engineer";
+      docs = "https://nyxt.atlas.engineer/documentation";
       source = "https://github.com/atlas-engineer/nyxt";
     };
 

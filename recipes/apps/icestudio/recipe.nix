@@ -17,6 +17,7 @@
     links = {
       website = "https://icestudio.io/";
       source = "https://github.com/FPGAwars/icestudio";
+      docs = "https://github.com/FPGAwars/icestudio/wiki";
     };
 
     ngi.grants = {

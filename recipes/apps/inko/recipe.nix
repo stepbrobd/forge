@@ -27,6 +27,7 @@
 
     links = {
       website = "https://inko-lang.org/";
+      docs = "https://docs.inko-lang.org/manual/main/";
       source = "https://github.com/inko-lang/inko";
     };
 

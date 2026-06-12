@@ -29,6 +29,7 @@
     links = {
       website = "http://www.gnucap.org/";
       docs = "https://www.gnu.org/software/gnucap/gnucap-man.pdf";
+      source = "https://codeberg.org/gnucap/gnucap";
     };
 
     ngi.grants = {

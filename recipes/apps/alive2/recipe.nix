@@ -20,6 +20,7 @@
 
     links = {
       source = "https://github.com/AliveToolkit/alive2";
+      website = "https://alive2.llvm.org/ce/";
     };
 
     ngi.grants = {

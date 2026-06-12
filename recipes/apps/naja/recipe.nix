@@ -20,7 +20,8 @@
 
     links = {
       source = "https://github.com/najaeda/naja";
-      docs = "https://najaeda.github.io/naja/";
+      website = "https://najaeda.github.io/naja/";
+      docs = "https://najaeda.readthedocs.io/en/latest/";
     };
 
     ngi.grants = {
@@ -28,6 +29,7 @@
         "Naja"
         "Naja-DNL"
       ];
+      Commons = [ "Naja-LEC-TimingModelEngine" ];
     };
 
     programs = {

@@ -39,16 +39,22 @@
         "Servo-DX"
         "Servo-Multibrowsing"
       ];
+      Commons = [
+        "Servo-ServiceWorker-WebAPI"
+        "Servo-Editability"
+      ];
     };
 
     programs = {
       packages = [
         pkgs.servo
       ];
+      mainPackage = pkgs.servo;
 
       runtimes.shell = {
         enable = true;
       };
+      runtimes.program.enable = true;
     };
 
     test.programs.script = ''
