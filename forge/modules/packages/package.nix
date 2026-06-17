@@ -20,15 +20,15 @@
       type = lib.types.strMatching "^[a-zA-Z0-9-]+$";
       default = name;
       description = "Package name. Only letters, numbers and hyphens are allowed.";
-      example = "pkgs-hello";
+      example = "pkgs.hello";
       readOnly = true;
       internal = true;
     };
     outputName = lib.mkOption {
       type = lib.types.str;
-      default = "pkgs-${name}";
+      default = "pkgs.${name}";
       description = "Output name.";
-      example = "pkgs-hello";
+      example = "pkgs.hello";
       readOnly = true;
       internal = true;
     };
@@ -207,7 +207,7 @@
 
           ```
           mkdir dev && cd dev
-          nix develop .#pkgs-''${package}
+          nix develop .#pkgs.''${package}
           ```
 
           and follow instructions.
@@ -235,7 +235,7 @@
           Launch test with:
 
           ```
-          nix build .#pkgs-''${package}.test
+          nix build .#pkgs.''${package}.test
           ```
         '';
         example = ''
@@ -271,7 +271,7 @@
           Enter with:
 
           ```
-          nix develop .#pkgs-''${package}.env
+          nix develop .#pkgs.''${package}.env
           ```
         '';
         example = ''

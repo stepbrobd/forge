@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ./assertions-warnings.nix
@@ -52,8 +57,32 @@
       assertionMessages = lib.concatMapStringsSep "\n" (x: "- ${x.message}") failedAssertions;
     in
     {
-      packages = lib.mapAttrs' (
-        packageName: package: lib.nameValuePair package.outputName package.result.derivation
+      packages = {
+        pkgs =
+          let
+            pkgsBundle = pkgs.linkFarm "pkgs" (
+              lib.mapAttrsToList (name: package: {
+                inherit name;
+                path = package.result.derivation;
+              }) config.forge.packages
+            );
+            mkDummyGroup =
+              name:
+              (lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages)
+              // {
+                inherit name;
+                type = "derivation";
+                inherit (pkgs.stdenv.hostPlatform) system;
+                inherit (pkgsBundle) drvPath outPath outputName;
+                # In case flake schemas ever gets merged this will be useful
+                # if using `lix` you can see this description in the output of `nix flake show`
+                meta.description = "Build all pkgs at once";
+              };
+          in
+          mkDummyGroup "pkgs";
+      }
+      // lib.mapAttrs' (
+        name: package: lib.nameValuePair package.outputName package.result.derivation
       ) config.forge.packages;
 
       # Collect warnings from packages

@@ -473,7 +473,7 @@ viewPageAppRunNixOSModule model pageApp =
                         , "  forge = import \"${builtins.fetchTarball forge-url}\" { inherit pkgs; };"
                         , "in {"
                         , "  imports = ["
-                        , "    forge.forgePkgs." ++ pageApp.pageApp_app.app_outputName ++ ".nixosModules.default"
+                        , "    apps." ++ pageApp.pageApp_app.app_outputName ++ ".nixosModules.default"
                         , "  ];"
                         , "  # ..."
                         , "}"

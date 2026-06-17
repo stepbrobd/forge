@@ -149,7 +149,7 @@ build.standardBuilder = {
 Run the first build:
 
 ```bash
-nix build .#pkgs-<package-name> --print-build-logs
+nix build .#pkgs.<package-name> --print-build-logs
 ```
 
 Nix will fail during the first build due to a missing source hash. Update
@@ -170,7 +170,7 @@ Ctrl-C to drop into a shell and start investigating.
 
 ```bash
 mkdir dev && cd dev
-nix develop .#pkgs-<package-name>
+nix develop .#pkgs.<package-name>
 ```
 
 ## Tests
@@ -186,5 +186,5 @@ test.script = ''
 Run test:
 
 ```bash
-nix build .#pkgs-<package-name>.test --print-build-logs
+nix build .#pkgs.<package-name>.test --print-build-logs
 ```

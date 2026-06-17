@@ -111,11 +111,46 @@
             }) tests
           );
         };
+
+      bundledApps = lib.mapAttrs (appName: app: shellBundle app) config.forge.apps;
+
+      appsBundle = pkgs.linkFarm "apps" (
+        lib.mapAttrsToList (name: drv: {
+          inherit name;
+          path = drv;
+        }) bundledApps
+      );
+
+      mkDummyGroup =
+        name: attrs:
+        attrs
+        // {
+          inherit name;
+          type = "derivation";
+          system = pkgs.stdenv.hostPlatform.system;
+          inherit (appsBundle) drvPath outPath outputName;
+          # In case flake schemas ever gets merged, this will be useful
+          # if using `lix` you can see this description in the output of `nix flake show`
+          meta.description = "Build all apps at once";
+        };
     in
     {
-      packages = lib.mapAttrs' (appName: app: {
-        name = app.outputName;
-        value = shellBundle app;
-      }) config.forge.apps;
+      packages = {
+        apps = mkDummyGroup "apps" bundledApps;
+      }
+      // lib.concatMapAttrs (
+        appName: bundled:
+        {
+          "apps.${appName}" = bundled;
+        }
+        // lib.optionalAttrs (bundled ? container) { "apps.${appName}.container" = bundled.container; }
+        // lib.optionalAttrs (bundled ? program) { "apps.${appName}.program" = bundled.program; }
+        // lib.optionalAttrs (bundled ? vm) { "apps.${appName}.vm" = bundled.vm; }
+      ) bundledApps;
+
+      legacyPackages = {
+        # Tip(debugging): use this in nix repl
+        appsRepl = bundledApps;
+      };
     };
 }

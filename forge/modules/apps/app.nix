@@ -18,12 +18,12 @@
       internal = true;
     };
     outputName = lib.mkOption {
-      # The apps- prefix namespaces applications
+      # The apps. prefix namespaces applications
       # when they're inserted into `allSystems.${system}.packages`.
-      default = "apps-${config.name}";
+      default = "apps.${config.name}";
       type = lib.types.str;
-      description = "Package name to access the application, as in `nix run .#apps-my-hello`.";
-      example = "apps-my-hello";
+      description = "Package name to access the application, as in `nix run .#apps.my-hello`.";
+      example = "apps.my-hello";
       readOnly = true;
       internal = true;
     };

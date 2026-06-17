@@ -46,7 +46,14 @@ let
   '';
 in
 {
-  packages = {
+  packages._forge = {
+    # Tip(debugging): use this when not using the Flake setup (`nix repl -f.`)
+    # to get a curated list of packages `pkgs.<Tab>`
+    # In the Flake setup, it's equivalent to use `nix flake show`.
+    # This is because simply querying `pkgs` will not display the list,
+    # `pkgs` being a derivation and not an attrset of derivations
+    # also in the Traditional setup to keep consistency between Flake and Traditional.
+    pkgsRepl = lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages;
     _forge-config = pkgs.writeTextFile {
       name = "forge-config.json";
       text =
@@ -70,7 +77,7 @@ in
     '';
 
     _forge-ui = pkgs.callPackage ../ui/package.nix {
-      inherit (config.packages)
+      inherit (config.legacyPackages)
         _forge-config
         _forge-docs
         _forge-options
@@ -81,7 +88,7 @@ in
     };
 
     _forge-ui-dev = pkgs.callPackage ../flake/packages/forge-ui-dev.nix {
-      inherit (config.packages)
+      inherit (config.legacyPackages)
         _forge-ui
         _forge-docs
         _forge-options

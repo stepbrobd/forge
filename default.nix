@@ -17,7 +17,6 @@ let
   default = lib.makeScope pkgs.newScope (def: {
     inherit
       lib
-      pkgs
       flake
       system
       inputs
@@ -29,18 +28,19 @@ let
     nimiLib = def.nimi.passthru;
 
     # requires debug to be enabled in flake
-    debug = flake.outputs.allSystems.${system};
+    debug = flake.outputs.flakeConfig.allSystems.${system};
 
     inherit (default.debug) forge;
 
     # derivations
-    forgeApps = lib.filterAttrs (
-      name: value: lib.hasPrefix "apps-" name
-    ) flake.outputs.packages.${system};
-    forgePkgs = lib.filterAttrs (
-      name: value: lib.hasPrefix "pkgs-" name
-    ) flake.outputs.packages.${system};
+    apps = flake.outputs.packages.${system}.apps or { };
+    pkgs = flake.outputs.packages.${system}.pkgs or { };
+
+    # In repl use these to access individual attributes
+    appsRepl = flake.outputs.legacyPackages.${system}.appsRepl or { };
+    pkgsRepl = flake.outputs.legacyPackages.${system}.pkgsRepl or { };
+
     shells = flake.outputs.devShells.${system};
   });
 in
-default // flake.outputs.packages.${system}
+default // flake.outputs.legacyPackages.${system}
