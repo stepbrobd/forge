@@ -8,9 +8,7 @@
 
   appIcons,
 
-  _forge-config,
-  _forge-docs,
-  _forge-options,
+  _forge,
   highlight-js,
   ...
 }:
@@ -67,8 +65,8 @@ symlinkJoin {
     rm -rf js/src
 
     # Symlink config files
-    ln -s ${_forge-config} forge-config.json
-    ln -s ${_forge-options} forge-options.json
+    ln -s ${_forge.config} forge-config.json
+    ln -s ${_forge.options} forge-options.json
 
     # Create resources directory and copy default icon
     mkdir -p resources/apps
@@ -99,7 +97,7 @@ symlinkJoin {
     done
 
     # Install docs
-    ln -s ${_forge-docs} docs
+    ln -s ${_forge.docs} docs
 
     popd
   '';

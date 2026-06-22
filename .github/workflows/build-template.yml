@@ -104,10 +104,10 @@ jobs:
         env:
           INPUTS_APP: ${{ inputs.app }}
 
-      - name: Build _forge-ui
+      - name: Build _forge.ui
         if: inputs.test_forge_ui
         working-directory: /tmp/template-test
         run: |
-          nix build .#_forge-ui --accept-flake-config
+          nix build .#_forge.ui --accept-flake-config
           test -f result/index.html
           test -f result/forge-config.json

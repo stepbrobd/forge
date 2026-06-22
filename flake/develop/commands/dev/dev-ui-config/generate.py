@@ -187,7 +187,7 @@ def main():
 
         try:
             result = run_command(
-                ["nix", "eval", ".#_forge-config.text", "--raw"],
+                ["nix", "eval", ".#_forge.config.text", "--raw"],
                 cwd=str(temp_path),
                 stdout=subprocess.PIPE,
                 text=True,

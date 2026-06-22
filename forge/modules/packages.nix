@@ -60,15 +60,16 @@
       packages = {
         pkgs =
           let
+            drvs = lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages;
             pkgsBundle = pkgs.linkFarm "pkgs" (
-              lib.mapAttrsToList (name: package: {
+              lib.mapAttrsToList (name: drv: {
                 inherit name;
-                path = package.result.derivation;
-              }) config.forge.packages
+                path = drv;
+              }) drvs
             );
             mkDummyGroup =
               name:
-              (lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages)
+              drvs
               // {
                 inherit name;
                 type = "derivation";
