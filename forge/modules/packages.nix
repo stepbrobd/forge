@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  forge-lib,
   ...
 }:
 {
@@ -55,37 +56,13 @@
       # Process assertions: filter to get failed assertions (condition = false)
       failedAssertions = lib.filter (x: !x.condition) config.assertions;
       assertionMessages = lib.concatMapStringsSep "\n" (x: "- ${x.message}") failedAssertions;
+      packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
+        namespace = "pkgs";
+        derivations = lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages;
+      }) { };
     in
     {
-      packages = {
-        pkgs =
-          let
-            drvs = lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages;
-            pkgsBundle = pkgs.linkFarm "pkgs" (
-              lib.mapAttrsToList (name: drv: {
-                inherit name;
-                path = drv;
-              }) drvs
-            );
-            mkDummyGroup =
-              name:
-              drvs
-              // {
-                inherit name;
-                type = "derivation";
-                inherit (pkgs.stdenv.hostPlatform) system;
-                inherit (pkgsBundle) drvPath outPath outputName;
-                # In case flake schemas ever gets merged this will be useful
-                # if using `lix` you can see this description in the output of `nix flake show`
-                meta.description = "Build all pkgs at once";
-              };
-          in
-          mkDummyGroup "pkgs";
-      }
-      // lib.mapAttrs' (
-        name: package: lib.nameValuePair package.outputName package.result.derivation
-      ) config.forge.packages;
-
+      inherit (packagesWithNamespace) packages legacyPackages;
       # Collect warnings from packages
       warnings = lib.flatten (
         map (pkg: [
