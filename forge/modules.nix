@@ -9,6 +9,7 @@ let
   flakeModules = {
     base = flakeArgs: {
       imports = [
+        modules/lib.nix
         {
           # Expose the `inputs` from `ngi-forge`
           # Note that this `inputs` is always `ngi-forge`'s,
@@ -31,6 +32,7 @@ let
           _module.args.self-inputs = flakeArgs.inputs;
           _module.args.flake-parts-lib = flake-parts-lib;
           _module.args.forge-inputs = inputs;
+          _module.args.forge-lib = forge-inputs.self.lib;
 
           # Do not require users to pin their own `inputs.nixpkgs`.
           _module.args.pkgs = lib.mkDefault forge-inputs.nixpkgs.legacyPackages.${system};

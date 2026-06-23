@@ -40,7 +40,7 @@ if [ "@mockBackend@" = "true" ]; then
   # Using the explicit path from our devshell environment
   BACKEND_COMMAND="$DEVSHELL_DIR/bin/dev-ui-config @numApps@ @numPackages@ \"$rootDir/ui/build/forge-config.json\""
 else
-  BACKEND_COMMAND="$nix build -f \"$rootDir\" _forge-config -o \"$rootDir/ui/build/forge-config.json\" --show-trace"
+  BACKEND_COMMAND="$nix build -f \"$rootDir\" _forge.config -o \"$rootDir/ui/build/forge-config.json\" --show-trace"
 fi
 
 systemctl --user edit --runtime --force --full "$unit"-backend.service --stdin <<EOT
@@ -52,7 +52,7 @@ RemainAfterExit=yes
 Slice=$slice.slice
 Environment=PATH=$PATH
 WorkingDirectory=$rootDir
-ExecStart=$nix run -f "$rootDir" _forge-ui-dev --show-trace
+ExecStart=$nix run -f "$rootDir" _forge.ui-dev --show-trace
 ExecStart=$BACKEND_COMMAND
 ExecStart=$rootDir/flake/develop/commands/dev/forge-ui/build_app_resources.py
 EOT

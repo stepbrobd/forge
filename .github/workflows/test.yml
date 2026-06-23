@@ -105,7 +105,7 @@ jobs:
           sed -i "s|<base href=\"/\"|<base href=\"/forge/\"|g" ui/src/index.html
 
       - name: Build UI
-        run: nix build .#_forge-ui --accept-flake-config
+        run: nix build .#_forge.ui --accept-flake-config
 
       - name: Resolve Nix Symlink
         run: |

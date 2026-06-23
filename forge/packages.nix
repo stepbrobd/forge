@@ -3,6 +3,7 @@
   lib,
   pkgs,
   forge-inputs,
+  forge-lib,
   flake-parts-lib,
   ...
 }:
@@ -44,10 +45,9 @@ let
       '') (lib.attrValues forgeApps)
     )}
   '';
-in
-{
-  packages = {
-    _forge-config = pkgs.writeTextFile {
+
+  _forge = {
+    config = pkgs.writeTextFile {
       name = "forge-config.json";
       text =
         let
@@ -65,33 +65,25 @@ in
         builtins.toJSON (scrubConfig config.forge);
     };
 
-    _forge-options = pkgs.runCommand "options.json" { } ''
+    options = pkgs.runCommand "options.json" { } ''
       cp ${forgeOptions.optionsJSON}/share/doc/nixos/options.json $out
     '';
 
-    _forge-ui = pkgs.callPackage ../ui/package.nix {
-      inherit (config.packages)
-        _forge-config
-        _forge-docs
-        _forge-options
-        ;
+    ui = pkgs.callPackage ../ui/package.nix {
+      inherit (config.packages) _forge;
       inherit appIcons;
       buildElmApplication = (forge-inputs.elm2nix.lib.elm2nix pkgs).buildElmApplication;
       highlight-js = pkgs.callPackage ../flake/packages/highlight-js.nix { };
     };
 
-    _forge-ui-dev = pkgs.callPackage ../flake/packages/forge-ui-dev.nix {
-      inherit (config.packages)
-        _forge-ui
-        _forge-docs
-        _forge-options
-        ;
+    ui-dev = pkgs.callPackage ../flake/packages/forge-ui-dev.nix {
+      inherit (config.packages) _forge;
       highlight-js = pkgs.callPackage ../flake/packages/highlight-js.nix { };
     };
 
-    _forge-docs = pkgs.callPackage ../flake/packages/forge-docs.nix { };
+    docs = pkgs.callPackage ../flake/packages/forge-docs.nix { };
 
-    _forge-report =
+    report =
       let
         reports = import ../maintainers/mk-report.nix { inherit forgeApps pkgs lib; };
       in
@@ -103,8 +95,8 @@ in
           To generate a packaging report, use:
 
           \`\`\`
-          nix run .#_forge-report.all      # all grants
-          nix run .#_forge-report.<GRANT>  # single grant
+          nix run .#_forge.report.all      # all grants
+          nix run .#_forge.report.<GRANT>  # single grant
           \`\`\`
 
           Available grants:
@@ -118,7 +110,7 @@ in
         '';
       };
 
-    _forge-announcement = pkgs.writeShellApplication {
+    announcement = pkgs.writeShellApplication {
       name = "announce-projects";
       passthru = import ../maintainers/mk-announcement.nix { inherit forgeApps pkgs lib; };
       text = ''
@@ -126,7 +118,7 @@ in
         To generate project announcement, use:
 
         \`\`\`
-        nix run .#_forge-announcement.<APP_NAME>
+        nix run .#_forge.announcement.<APP_NAME>
         \`\`\`
 
         Available apps:
@@ -135,4 +127,11 @@ in
       '';
     };
   };
+  packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
+    namespace = "_forge";
+    derivations = _forge;
+  }) { };
+in
+{
+  inherit (packagesWithNamespace) packages legacyPackages;
 }

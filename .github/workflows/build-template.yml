@@ -79,35 +79,35 @@ jobs:
       - name: Build package
         if: inputs.package != ''
         working-directory: /tmp/template-test
-        run: nix build .#"${INPUTS_PACKAGE}" --accept-flake-config
+        run: nix build .#pkgs."${INPUTS_PACKAGE}" --accept-flake-config
         env:
           INPUTS_PACKAGE: ${{ inputs.package }}
 
       - name: Build app (shell)
         if: inputs.app != '' && inputs.test_shell
         working-directory: /tmp/template-test
-        run: nix build .#"${INPUTS_APP}-app" --accept-flake-config
+        run: nix build .#apps."${INPUTS_APP}" --accept-flake-config
         env:
           INPUTS_APP: ${{ inputs.app }}
 
       - name: Build app (container)
         if: inputs.app != '' && inputs.test_container
         working-directory: /tmp/template-test
-        run: nix build .#"${INPUTS_APP}-app.container" --accept-flake-config
+        run: nix build .#apps."${INPUTS_APP}.container" --accept-flake-config
         env:
           INPUTS_APP: ${{ inputs.app }}
 
       - name: Build app (VM)
         if: inputs.app != '' && inputs.test_vm
         working-directory: /tmp/template-test
-        run: nix build .#"${INPUTS_APP}-app.vm" --accept-flake-config
+        run: nix build .#apps."${INPUTS_APP}.vm" --accept-flake-config
         env:
           INPUTS_APP: ${{ inputs.app }}
 
-      - name: Build _forge-ui
+      - name: Build _forge.ui
         if: inputs.test_forge_ui
         working-directory: /tmp/template-test
         run: |
-          nix build .#_forge-ui --accept-flake-config
+          nix build .#_forge.ui --accept-flake-config
           test -f result/index.html
           test -f result/forge-config.json

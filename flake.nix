@@ -42,50 +42,65 @@
   outputs =
     inputs@{ self, flake-parts, ... }:
 
-    flake-parts.lib.mkFlake
-      {
-        inherit inputs;
-      }
-      (flakeArgs: {
-        # Uncomment this to enable flake-parts debug.
-        # https://flake.parts/options/flake-parts.html?highlight=debug#opt-debug
-        # debug = true;
-
-        systems = [
-          "x86_64-linux"
-          # "aarch64-linux"
-          # "aarch64-darwin"
-          # "x86_64-darwin"
-        ];
-
-        imports = [
-          ./forge/modules.nix
-          ./flake/develop
-          ./flake/packages.nix
-          ./flake/checks.nix
-          ./flake/templates.nix
-        ];
-
-        # Export the flake configuration to ease exploration in `nix repl .`.
-        #
-        # Remark(clarity): like all `unknown` flake outputs,
-        # this currently raise a warning in `nix flake check`:
-        # > warning: unknown flake output 'flakeConfig'
-        # Issue: https://github.com/NixOS/nix/issues/6381
-        flake.flakeConfig = flakeArgs.config;
-        flake.maintainerList = ./maintainers/maintainer-list.nix;
-
-        perSystem =
-          { system, ... }:
+    let
+      flake =
+        flake-parts.lib.mkFlake
           {
-            forge = {
-              repositoryUrl = self.sourceInfo.url or "github:ngi-nix/forge";
-              maintainerLists = [ self.maintainerList ];
-              recipeDirs = {
-                packages = "recipes/packages";
-                apps = "recipes/apps";
+            inherit inputs;
+          }
+          (flakeArgs: {
+            # Uncomment this to enable flake-parts debug.
+            # https://flake.parts/options/flake-parts.html?highlight=debug#opt-debug
+            # debug = true;
+
+            systems = [
+              "x86_64-linux"
+              # "aarch64-linux"
+              # "aarch64-darwin"
+              # "x86_64-darwin"
+            ];
+
+            imports = [
+              ./forge/modules.nix
+              ./flake/develop
+              ./flake/packages.nix
+              ./flake/checks.nix
+              ./flake/templates.nix
+            ];
+
+            # Export the flake configuration to ease exploration in `nix repl .`.
+            #
+            # Remark(clarity): like all `unknown` flake outputs,
+            # this currently raise a warning in `nix flake check`:
+            # > warning: unknown flake output 'flakeConfig'
+            # Issue: https://github.com/NixOS/nix/issues/6381
+            flake.flakeConfig = flakeArgs.config;
+            flake.maintainerList = ./maintainers/maintainer-list.nix;
+
+            perSystem =
+              { system, ... }:
+              {
+                forge = {
+                  repositoryUrl = self.sourceInfo.url or "github:ngi-nix/forge";
+                  maintainerLists = [ self.maintainerList ];
+                  recipeDirs = {
+                    packages = "recipes/packages";
+                    apps = "recipes/apps";
+                  };
+                };
               };
-            };
-          };
-      });
+          });
+
+      # The `apps` output is disallowed because we are exposing `apps` through `packages.${system}`.
+      # `flake-parts` creates empty `apps.${system}` by default, so we filter out empty sets.
+      apps = inputs.nixpkgs.lib.filterAttrs (_: v: v != { }) (flake.apps or { });
+    in
+    if apps != { } then
+      throw ''
+        The top-level `apps` flake output is disallowed in this project.
+        We instead treat `apps` as packages and expose them via `packages.''${system}`
+        Please remove any direct `apps` definitions which were mistakenly added.
+      ''
+    else
+      builtins.removeAttrs flake [ "apps" ];
 }

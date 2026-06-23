@@ -1,15 +1,13 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  forge-lib,
+  ...
+}:
 {
   imports = [
     ./assertions-warnings.nix
-    ./builders/shared.nix
-    ./builders/standard-builder
-    ./builders/go-builder
-    ./builders/npm-package-builder
-    ./builders/pnpm-package-builder
-    ./builders/python-app-builder
-    ./builders/python-package-builder
-    ./builders/rust-package-builder
   ];
 
   options.forge = lib.mkOption {
@@ -35,7 +33,10 @@
                   specialArgs = specialArgs // {
                     forgeOptions = forgeArgs.options;
                   };
-                  modules = [ packages/package.nix ];
+                  modules = [
+                    builders/shared.nix
+                    packages/package.nix
+                  ];
                 }
               );
             };
@@ -55,8 +56,13 @@
       # Process assertions: filter to get failed assertions (condition = false)
       failedAssertions = lib.filter (x: !x.condition) config.assertions;
       assertionMessages = lib.concatMapStringsSep "\n" (x: "- ${x.message}") failedAssertions;
+      packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
+        namespace = "pkgs";
+        derivations = lib.mapAttrs (packageName: package: package.result.derivation) config.forge.packages;
+      }) { };
     in
     {
+      inherit (packagesWithNamespace) packages legacyPackages;
       # Collect warnings from packages
       warnings = lib.flatten (
         map (pkg: [

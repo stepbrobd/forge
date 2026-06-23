@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  forge-lib,
   pkgs,
   ...
 }:
@@ -111,12 +112,24 @@
             }) tests
           );
         };
+
+      bundledApps = lib.mapAttrs (appName: app: shellBundle app) config.forge.apps;
+      packagesWithNamespace = pkgs.callPackage (forge-lib.flakePackagesWithNamespace {
+        namespace = "apps";
+        derivations = bundledApps;
+      }) { };
     in
     {
-      packages = lib.mapAttrs' (appName: app: {
-        # Insert the -app suffix to create a namespace for applications.
-        name = "${appName}-app";
-        value = shellBundle app;
-      }) config.forge.apps;
+      inherit (packagesWithNamespace) legacyPackages;
+      packages =
+        packagesWithNamespace.packages
+        // lib.concatMapAttrs (
+          appName: bundled:
+          { }
+          // lib.optionalAttrs (bundled ? container) { "apps.${appName}.container" = bundled.container; }
+          // lib.optionalAttrs (bundled ? program) { "apps.${appName}.program" = bundled.program; }
+          // lib.optionalAttrs (bundled ? vm) { "apps.${appName}.vm" = bundled.vm; }
+        ) bundledApps;
+
     };
 }
