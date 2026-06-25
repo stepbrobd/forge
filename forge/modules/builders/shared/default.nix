@@ -71,7 +71,7 @@
                     version
                     ;
 
-                  src = import ./shared/src.nix args;
+                  src = import ./src.nix args;
 
                   inherit (config.source)
                     patches
