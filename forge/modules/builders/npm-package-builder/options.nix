@@ -15,41 +15,6 @@
       [Nixpkgs Node.js documentation](https://nixos.org/manual/nixpkgs/unstable/#language-javascript)
     '';
 
-    packages = {
-      build = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of additional build-time dependencies needed during compilation (native architecture).
-
-          Node.js is included automatically.
-
-          Mapped to `nativeBuildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.pkg-config ]";
-      };
-      run = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of runtime dependencies needed by the package (target architecture).
-
-          Mapped to `buildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.vips ]";
-      };
-      check = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of test dependencies needed to run the test suite.
-
-          Mapped to `nativeCheckInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.chromium ]";
-      };
-    };
-
     npmDepsHash = lib.mkOption {
       type = lib.types.str;
       default = "";

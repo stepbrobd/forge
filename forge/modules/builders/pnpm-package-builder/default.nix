@@ -1,20 +1,18 @@
 {
   lib,
-  config,
   pkgs,
-  sharedBuildAttrs,
+  packageBuilderModule,
   ...
 }:
 {
-  imports = [ ./options.nix ];
-  config = lib.mkIf config.build.pnpmPackageBuilder.enable {
-    result.derivation =
-      let
-        builderCfg = config.build.pnpmPackageBuilder;
-      in
-      pkgs.stdenvNoCC.mkDerivation (
-        finalAttrs:
-        let
+  imports = [
+    ./options.nix
+    (packageBuilderModule {
+      builderName = "pnpmPackageBuilder";
+      mkDerivation = pkgs.stdenvNoCC.mkDerivation;
+      attrs =
+        builder: finalAttrs: previousAttrs:
+        {
           pnpmDeps = pkgs.fetchPnpmDeps ({
             inherit (finalAttrs)
               pname
@@ -22,45 +20,30 @@
               version
               sourceRoot
               ;
-            inherit (builderCfg) pnpm fetcherVersion;
-            hash = builderCfg.pnpmDepsHash;
+            inherit (builder) pnpm fetcherVersion;
+            hash = builder.pnpmDepsHash;
           });
-        in
-        {
-          inherit (config) pname version;
-          inherit pnpmDeps;
-          src = sharedBuildAttrs.pkgSource config;
-          patches = config.source.patches or [ ];
-
-          nativeBuildInputs = [
-            builderCfg.pnpm
+          nativeBuildInputs = previousAttrs.nativeBuildInputs or [ ] ++ [
+            builder.pnpm
             pkgs.pnpmConfigHook
             pkgs.nodejs
-          ]
-          ++ builderCfg.packages.build;
-          buildInputs = builderCfg.packages.run;
-          nativeCheckInputs = builderCfg.packages.check;
+          ];
 
           buildPhase = ''
             runHook preBuild
-            pnpm run ${builderCfg.buildScript}
+            pnpm run ${builder.buildScript}
             runHook postBuild
           '';
 
-          installPhase = ''
-            runHook preInstall
-            cp -r ${builderCfg.installDir} $out
-            runHook postInstall
-          '';
-
-          passthru = sharedBuildAttrs.pkgPassthru config finalAttrs.finalPackage;
-          meta = sharedBuildAttrs.pkgMeta config;
+          installPhase = lib.concatStringsSep "\n" [
+            "runHook preInstall"
+            (lib.optionalString (builder.installDir != null) "cp -r ${builder.installDir} $out")
+            "runHook postInstall"
+          ];
         }
-        // lib.optionalAttrs (builderCfg.sourceRoot != null) {
-          inherit (builderCfg) sourceRoot;
-        }
-        // config.build.extraAttrs
-        // lib.optionalAttrs config.build.debug sharedBuildAttrs.debugShellHookAttr
-      );
-  };
+        // lib.optionalAttrs (builder.sourceRoot != null) {
+          inherit (builder) sourceRoot;
+        };
+    })
+  ];
 }

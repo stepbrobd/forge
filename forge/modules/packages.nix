@@ -3,11 +3,13 @@
   lib,
   pkgs,
   forge-lib,
+  packageBuilderModule,
   ...
 }:
 {
   imports = [
     ./assertions-warnings.nix
+    builders/shared.nix
   ];
 
   options.forge = lib.mkOption {
@@ -32,9 +34,9 @@
                 lib.types.submoduleWith {
                   specialArgs = specialArgs // {
                     forgeOptions = forgeArgs.options;
+                    inherit packageBuilderModule;
                   };
                   modules = [
-                    builders/shared.nix
                     packages/package.nix
                   ];
                 }

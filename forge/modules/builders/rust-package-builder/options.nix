@@ -17,39 +17,6 @@
       [Nixpkgs Rust documentation](https://nixos.org/manual/nixpkgs/unstable/#rust)
     '';
 
-    packages = {
-      build = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of build-time dependencies needed during compilation (native architecture).
-
-          Mapped to `nativeBuildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.pkg-config pkgs.rustPlatform.bindgenHook ]";
-      };
-      run = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of runtime dependencies needed by the package (target architecture).
-
-          Mapped to `buildInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.openssl pkgs.sqlite pkgs.libopus ]";
-      };
-      check = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = ''
-          List of test dependencies needed to run the test suite.
-
-          Mapped to `nativeCheckInputs`.
-        '';
-        example = lib.literalExpression "[ pkgs.cargo-nextest ]";
-      };
-    };
-
     cargoHash = lib.mkOption {
       type = lib.types.str;
       default = "";
