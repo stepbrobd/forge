@@ -371,7 +371,7 @@ in
             ) config.result.nixosImages}
           )
           for image in "''${IMAGES[@]}"; do
-            podman load < "$image"
+            podman load --quiet < "$image"
           done
 
           ${lib.getExe pkgs.podman-compose} \
