@@ -137,11 +137,69 @@ viewPageAppUsage _ pageApp =
         text ""
 
 
+viewBulletList : List (Html Update) -> Html Update
+viewBulletList items =
+    ul
+        [ class "ms-2 mb-3"
+        , style "list-style-type" "disc"
+        , style "padding-left" "1.2em"
+        ]
+        items
+
+
+viewPortList : List String -> Html Update
+viewPortList ports =
+    if List.isEmpty ports then
+        text ""
+
+    else
+        ul
+            [ class "ms-3 mb-1"
+            , style "list-style-type" "none"
+            , style "padding" "0px"
+            ]
+            (List.map
+                (\p -> li [] [ small [ class "text-body-secondary" ] [ text (String.replace ":" " → " p) ] ])
+                ports
+            )
+
+
+viewResource : ( String, AppResource ) -> Html Update
+viewResource ( rname, resource ) =
+    div []
+        [ small [ class "text-body-secondary" ] [ text rname ]
+        , viewPortList resource.appResource_ports
+        ]
+
+
+viewComponent : ( String, AppComponent ) -> Html Update
+viewComponent ( cname, component ) =
+    li []
+        [ small [] [ text cname ]
+        , viewPortList component.appComponent_ports
+        , if Dict.isEmpty component.appComponent_resources then
+            text ""
+
+          else
+            div [ class "ms-2" ]
+                (component.appComponent_resources
+                    |> Dict.toList
+                    |> List.map viewResource
+                )
+        ]
+
+
 viewPageAppConfiguration : Model -> PageApp -> Html Update
 viewPageAppConfiguration _ pageApp =
     let
         routeApp =
             pageApp.pageApp_route
+
+        packageNames =
+            getAppProgramPackageNames pageApp.pageApp_app.app_programs
+
+        components =
+            pageApp.pageApp_app.app_services.appServices_components
     in
     div
         [ class "box-container target-highlight mb-3"
@@ -162,21 +220,25 @@ viewPageAppConfiguration _ pageApp =
                 ]
                 []
             ]
-        , if List.isEmpty (getAppServicesPorts pageApp.pageApp_app.app_services) then
+        , if List.isEmpty packageNames then
             text ""
 
           else
             div []
                 [ div [ class "ms-2 mb-1" ]
-                    [ small [ class "text-body-secondary" ] [ text "Forwarded Ports" ] ]
-                , ul
-                    [ class "mb-3 ms-4"
-                    , style "list-style-type" "none"
-                    , style "padding" "0px"
-                    ]
-                    (getAppServicesPorts pageApp.pageApp_app.app_services
-                        |> List.map (\p -> li [] [ text (String.replace ":" " → " p) ])
-                    )
+                    [ small [ class "text-body-secondary" ] [ text "Programs" ] ]
+                , viewBulletList
+                    (List.map (\n -> li [] [ small [] [ text n ] ]) packageNames)
+                ]
+        , if Dict.isEmpty components then
+            text ""
+
+          else
+            div []
+                [ div [ class "ms-2 mb-1" ]
+                    [ small [ class "text-body-secondary" ] [ text "Services" ] ]
+                , viewBulletList
+                    (components |> Dict.toList |> List.map viewComponent)
                 ]
         , div [ class "ms-2 mb-1" ]
             [ small [ class "text-body-secondary" ] [ text "Runtimes" ] ]

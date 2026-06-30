@@ -27,7 +27,13 @@
 
     forwardPorts =
       let
-        servicePorts = lib.concatMap (service: service.ports) (lib.attrValues app.services.components);
+        servicePorts = lib.concatMap (service: service.process.ports) (
+          lib.attrValues app.services.components
+        );
+        resourcePorts = lib.pipe app.services.resources [
+          (lib.mapAttrsToList (name: value: value.ports))
+          (lib.flatten)
+        ];
       in
       map (
         portRange:
@@ -39,6 +45,6 @@
           host.port = lib.toInt (lib.elemAt portSplit 0);
           guest.port = lib.toInt (lib.elemAt portSplit 1);
         }
-      ) servicePorts;
+      ) (servicePorts ++ resourcePorts);
   };
 }

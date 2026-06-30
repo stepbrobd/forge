@@ -16,13 +16,16 @@
         }
       );
       default = { };
-      description = "Portable services components.";
-      # map user-config to a format which can be used by modular services
+      description = ''
+        Services components.
+
+        Each component must have `process.command` set and can optionally
+        declare one or more `resources` providing NixOS configuration.
+      '';
       apply =
         self:
         lib.mapAttrs (
           _: service:
-
           let
             knownComponents = lib.attrNames config.components;
             invalidAfterDeps = lib.filter (dep: !lib.elem dep knownComponents) service.after;
@@ -38,8 +41,6 @@
               '';
             };
 
-            serviceCommand =
-              if lib.isDerivation service.command then lib.getExe service.command else service.command;
           in
 
           assert (lib.any (c: lib.throwIf c.cond c.msg true) (lib.attrValues checks));
@@ -47,9 +48,17 @@
           service
           // {
             result = {
-              process.argv = [ serviceCommand ] ++ service.argv;
-              configData = service.configData;
-              preStart = service.preStart;
+              process.argv =
+                let
+                  serviceCommand =
+                    if lib.isDerivation service.process.command then
+                      lib.getExe service.process.command
+                    else
+                      service.process.command;
+                in
+                [ serviceCommand ] ++ service.process.argv;
+              configData = service.process.configData;
+              preStart = service.process.preStart;
             };
           }
         ) self;
@@ -63,5 +72,29 @@
       default = { };
       description = "Portable services runtimes.";
     };
+
+    resources = lib.mkOption {
+      internal = true;
+      type = lib.types.attrsOf (lib.types.submodule ./resource.nix);
+      default = { };
+      description = "Resource configuration";
+      example = lib.literalExpression ''
+        {
+          database.nixosConfig = { services.postgresql.enable = true; };
+          cache.nixosConfig = { services.redis.servers.default.enable = true; };
+        }
+      '';
+    };
   };
+
+  config.resources =
+    let
+      componentResources = lib.pipe config.components [
+        (lib.attrValues)
+        (lib.catAttrs "resources")
+      ];
+
+      runtimeResources = [ config.runtimes.container.resources ];
+    in
+    lib.mkMerge (runtimeResources ++ componentResources);
 }
