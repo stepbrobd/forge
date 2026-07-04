@@ -3,9 +3,9 @@
   ...
 }:
 {
-  flake.lib = {
+  flake.lib = rec {
     # Helper to support namespacing with dot (`.`) in `flake.packages`
-    # (eg.`nix build .#pkgs.${packageName}`).
+    # (eg. `nix build .#pkgs.${packageName}`).
     # This relies on the Nix completion not quoting attrset keys containing
     # a dot.
     flakePackagesWithNamespace =
@@ -43,5 +43,21 @@
     # Get the Nix store hash of a derivation's output path
     # (eg. `/nix/store/<hash>-name` -> `<hash>`).
     nixStoreHash = drv: lib.unsafeDiscardStringContext (lib.substring 0 32 (baseNameOf drv.outPath));
+
+    # Recursively remove Nix context used to track dependencies.
+    # Useful to avoid building the derivations contained in a `config`
+    # when serializing it (eg. with `builtins.toJSON`).
+    scrubNixContext =
+      x:
+      if lib.isString x || lib.isDerivation x then
+        lib.unsafeDiscardStringContext x
+      else if lib.isFunction x then
+        null
+      else if lib.isList x then
+        map scrubNixContext x
+      else if lib.isAttrs x then
+        lib.mapAttrs (n: v: if n == "__toString" then v else scrubNixContext v) x
+      else
+        x;
   };
 }
