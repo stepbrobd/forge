@@ -147,6 +147,12 @@
       '';
     };
 
+    healthcheck = lib.mkOption {
+      type = lib.types.submodule ./healthcheck.nix;
+      default = { };
+      description = "Health check configuration.";
+    };
+
     dependsOn = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];

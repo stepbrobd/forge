@@ -2,6 +2,7 @@
   forge-inputs,
   app,
 
+  pkgs,
   lib,
   ...
 }:
@@ -37,6 +38,7 @@
       requiredServiceUnits = map (a: a + ".service") (
         lib.filter (a: app.services.components ? ${a}) service.dependsOn
       );
+
     in
     {
       environment = service.process.environment;
@@ -54,6 +56,30 @@
         })
         (lib.optionalAttrs (service.process.user == "root") {
           User = "root";
+        })
+        (lib.optionalAttrs service.healthcheck.enable {
+          ExecStartPost =
+            let
+              hc = service.healthcheck;
+              name = "${serviceName}-healthcheck";
+            in
+            lib.getExe (
+              pkgs.writeShellApplication {
+                name = name;
+                runtimeInputs = [ pkgs.coreutils ] ++ hc.packages;
+                text = ''
+                  sleep ${hc.startPeriod}
+                  for _ in $(seq 1 ${toString hc.retries}); do
+                    if timeout ${hc.timeout} ${lib.escapeShellArgs hc.test}; then
+                      exit 0
+                    fi
+                    sleep ${hc.interval}
+                  done
+                  exit 1
+                '';
+              }
+            );
+          TimeoutStartSec = "infinity";
         })
       ];
       after = requiredServiceUnits;
