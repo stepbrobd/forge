@@ -32,5 +32,9 @@
       ];
       runtimes.shell.enable = true;
     };
+
+    test.programs.script = ''
+      kikit --version | grep -q "${pkgs.kikit.version}"
+    '';
   };
 }
