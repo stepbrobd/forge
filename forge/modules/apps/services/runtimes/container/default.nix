@@ -121,14 +121,14 @@
         internal = true;
         readOnly = true;
         type = with lib.types; lazyAttrsOf (attrsOf anything);
-        description = "OCI images built from NixOS configurations for resource components.";
+        description = "NixOS based OCI images built from resource configuration.";
       };
 
-      recipes = lib.mkOption {
+      processImages = lib.mkOption {
         internal = true;
-        type = with lib.types; lazyAttrsOf (nullOr package);
-        default = null;
-        description = "Script that builds container image recipe.";
+        readOnly = true;
+        type = with lib.types; lazyAttrsOf (attrsOf anything);
+        description = "Single process OCI images built from component configurations.";
       };
 
       images = lib.mkOption {
@@ -184,10 +184,17 @@
       }
     ) app.services.components;
 
-    result.recipes = lib.mapAttrs (
+    result.processImages = lib.mapAttrs (
       name: _:
-      forge-inputs.nimi.packages.${system}.nimi.mkContainerImage {
-        config = config.result.modules.${name};
+      let
+        image = forge-inputs.nimi.packages.${system}.nimi.mkContainerImage {
+          config = config.result.modules.${name};
+        };
+        tag = forge-lib.nixStoreHash image;
+      in
+      {
+        inherit tag;
+        copyToArchive = tar: "${image.copyTo}/bin/copy-to oci-archive:${tar}:${name}:${tag} >/dev/null";
       }
     ) app.services.components;
 
@@ -256,9 +263,6 @@
           ln -s ${toplevel}/init $out/usr/sbin/init
         '';
         tag = forge-lib.nixStoreHash initScript;
-      in
-      {
-        inherit tag;
         stream = pkgs.dockerTools.streamLayeredImage {
           inherit name tag;
           contents = [ initScript ];
@@ -271,22 +275,14 @@
             StopSignal = "SIGRTMIN+3";
           };
         };
+      in
+      {
+        inherit tag stream;
+        copyToArchive = tar: "${stream} 2>/dev/null > ${tar}";
       }
     ) app.services.resources;
 
-    result.images =
-      # component images
-      lib.mapAttrs (name: recipe: {
-        tag = forge-lib.nixStoreHash recipe;
-        copyToArchive =
-          tar:
-          "${recipe.copyTo}/bin/copy-to oci-archive:${tar}:${name}:${forge-lib.nixStoreHash recipe} >/dev/null";
-      }) config.result.recipes
-      # resource images
-      // lib.mapAttrs (name: nixosImage: {
-        tag = nixosImage.tag;
-        copyToArchive = tar: "${nixosImage.stream} 2>/dev/null > ${tar}";
-      }) config.result.nixosImages;
+    result.images = config.result.processImages // config.result.nixosImages;
 
     result.build =
       let
