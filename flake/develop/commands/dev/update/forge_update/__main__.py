@@ -60,7 +60,7 @@ class Args(argparse.Namespace):
     commit: bool = False
     skip_prefetch: bool = False
     prefetch_timeout: int = 180
-    recipes_root: Path = Path("recipes/packages")
+    recipes_root: Path = Path("recipes/pkgs")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -93,7 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
     _ = parser.add_argument(
         "--recipes-root",
         type=Path,
-        default=Path("recipes/packages"),
+        default=Path("recipes/pkgs"),
     )
 
     return parser
