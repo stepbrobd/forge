@@ -74,6 +74,11 @@ jobs:
                 version_diff="${BASH_REMATCH[2]}"
             fi
 
+            # prepend package namespace, if missing
+            if [[ ! "$pkg" =~ ^pkgs\. ]]; then
+                pkg="pkgs.$pkg"
+            fi
+
             if ! jq -e --arg pkg "$pkg" 'any(. == $pkg)' /tmp/valid-packages.json > /dev/null; then
               echo "$pkg is not a valid forge package, skipping."
               continue
