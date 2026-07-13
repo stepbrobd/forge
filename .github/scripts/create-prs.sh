@@ -13,18 +13,22 @@ while IFS=' ' read -r sha msg; do
   pkg=""
   version_diff=""
 
-  if [[ "$msg" =~ recipes\((.*)\):.(.*) ]]; then
+  if [[ $msg =~ recipes\((.*)\):.(.*) ]]; then
     pkg="${BASH_REMATCH[1]}"
     version_diff="${BASH_REMATCH[2]}"
   fi
 
   # prepend package namespace, if missing
-  if [[ ! "$pkg" =~ ^pkgs\. ]]; then
+  if [[ ! $pkg =~ ^pkgs\. ]]; then
     pkg="pkgs.$pkg"
   fi
 
   if ! jq -e --arg pkg "$pkg" 'any(. == $pkg)' /tmp/valid-packages.json >/dev/null; then
     echo "$pkg is not a valid forge package, skipping."
+    continue
+  fi
+
+  if [[ ${DRY_RUN:-false} == "true" ]]; then
     continue
   fi
 
@@ -54,7 +58,7 @@ while IFS=' ' read -r sha msg; do
 
   EXISTING_PR=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
 
-  if [[ -n "$EXISTING_PR" ]]; then
+  if [[ -n $EXISTING_PR ]]; then
     echo "PR already exists (#$EXISTING_PR) for $pkg. Updating title/body."
     gh pr edit "$EXISTING_PR" \
       --title "$msg" \
