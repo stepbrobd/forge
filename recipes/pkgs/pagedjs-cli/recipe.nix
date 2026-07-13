@@ -6,7 +6,7 @@
 
 {
   pkgs.pagedjs-cli = {
-    version = "0-unstable-2026-06-11";
+    version = "0-unstable-2026-01-05";
     description = "Command line interface for Pagedjs PDF renderer.";
     homePage = "https://pagedjs.org";
     mainProgram = "pagedjs-cli";
