@@ -140,6 +140,19 @@ in
             DB_USER = "postgres";
           };
         };
+        healthcheck = {
+          enable = true;
+          test = [
+            "curl"
+            "-fs"
+            "http://localhost:5000/health"
+          ];
+          packages = [ pkgs.curl ];
+          interval = "3s";
+          timeout = "3s";
+          startPeriod = "1s";
+          retries = 10;
+        };
 
         # DB resource (shared with api component)
         resources.database.nixosConfig = {
@@ -172,7 +185,6 @@ in
       # PostgREST API component
       components.api = {
         process = {
-          command = pkgs.postgrest;
           configData."postgrest.conf" = {
             text = ''
               db-uri = "postgresql://postgres@database/postgres"
@@ -183,16 +195,25 @@ in
             '';
             path = "postgrest.conf";
           };
-          preStart = ''
-            until pg_isready -h database -U postgres; do
-              sleep 1
-            done
-          '';
+          command = pkgs.postgrest;
           argv = [ "$XDG_CONFIG_HOME/postgrest.conf" ];
           packages = with pkgs; [
             coreutils
             postgresql
           ];
+        };
+        healthcheck = {
+          enable = true;
+          test = [
+            "curl"
+            "-fs"
+            "http://localhost:5001/"
+          ];
+          packages = [ pkgs.curl ];
+          interval = "3s";
+          timeout = "3s";
+          startPeriod = "1s";
+          retries = 10;
         };
 
         # DB resource (shared with web component)
@@ -211,6 +232,9 @@ in
           ports = recipe.services.components.web.resources.reverse-proxy.ports;
           role = recipe.services.components.web.resources.reverse-proxy.role;
         };
+
+        # Wait for `web` which runs `initdb` to create the `greetings` table.
+        dependsOn = [ "web" ];
       };
 
       # Runtimes
