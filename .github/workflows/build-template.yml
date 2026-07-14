@@ -14,15 +14,7 @@ on:
         required: false
         type: string
         default: ""
-      test_shell:
-        required: false
-        type: boolean
-        default: false
-      test_container:
-        required: false
-        type: boolean
-        default: false
-      test_vm:
+      test_app:
         required: false
         type: boolean
         default: false
@@ -83,28 +75,14 @@ jobs:
         env:
           INPUTS_PKG: ${{ inputs.pkg }}
 
-      - name: Build app (shell)
-        if: inputs.app != '' && inputs.test_shell
+      - name: Test app
+        if: inputs.app != '' && inputs.test_app
         working-directory: /tmp/template-test
-        run: nix build .#apps."${INPUTS_APP}" --accept-flake-config
+        run: nix build .#apps."${INPUTS_APP}".test --accept-flake-config
         env:
           INPUTS_APP: ${{ inputs.app }}
 
-      - name: Build app (container)
-        if: inputs.app != '' && inputs.test_container
-        working-directory: /tmp/template-test
-        run: nix build .#apps."${INPUTS_APP}.container" --accept-flake-config
-        env:
-          INPUTS_APP: ${{ inputs.app }}
-
-      - name: Build app (VM)
-        if: inputs.app != '' && inputs.test_vm
-        working-directory: /tmp/template-test
-        run: nix build .#apps."${INPUTS_APP}.vm" --accept-flake-config
-        env:
-          INPUTS_APP: ${{ inputs.app }}
-
-      - name: Build _forge.ui
+      - name: Test Forge UI
         if: inputs.test_forge_ui
         working-directory: /tmp/template-test
         run: |
