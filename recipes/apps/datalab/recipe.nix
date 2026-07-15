@@ -14,10 +14,16 @@
 
       #### GUI
 
-      Launch the DataLab desktop application:
+      First, [enter the Nix shell](app/datalab#run-shell), then launch the DataLab desktop application:
 
       ```bash
       datalab
+      ```
+
+      Or, for an automated demonstration of some of DataLab's features, run:
+
+      ```bash
+      datalab-demo
       ```
 
       #### API
