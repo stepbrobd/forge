@@ -32,7 +32,12 @@
       in
       pkgs.buildEnv {
         name = "runtime-bins";
-        paths = service.process.packages ++ runtimeConfig.packages ++ [ etcFiles ];
+        paths = [
+          etcFiles
+        ]
+        ++ service.process.packages
+        ++ runtimeConfig.packages
+        ++ service.healthcheck.packages;
         pathsToLink = [
           "/bin"
           "/etc"

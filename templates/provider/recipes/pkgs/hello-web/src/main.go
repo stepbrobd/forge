@@ -92,6 +92,7 @@ func initdb() {
 func serve() {
 	if !dbEnabled() {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			log.Printf("request: %s %s", r.Method, r.URL.Path)
 			fmt.Fprint(w, defaultGreeting)
 		})
 
@@ -113,6 +114,7 @@ func serve() {
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("request: %s %s", r.Method, r.URL.Path)
 		var msg string
 		if err := db.QueryRow(`SELECT message FROM greetings ORDER BY RANDOM() LIMIT 1`).Scan(&msg); err != nil {
 			http.Error(w, "failed to fetch greeting from database", http.StatusInternalServerError)

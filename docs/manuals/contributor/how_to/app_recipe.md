@@ -272,6 +272,34 @@ services = {
 };
 ```
 
+### Health checks
+
+A health check can be configured for a service component using the `healthcheck`
+option. When enabled, dependent services wait for the component to become healthy
+before starting.
+
+The `test` command is executed directly (no shell) so binary paths must be
+fully specified. Use string interpolation to reference Nix store paths.
+
+```nix
+services = {
+  components.my-service-A = {
+    process = {
+      ...
+    };
+
+    healthcheck = {
+      enable = true;
+      test = [ "${lib.getExe pkgs.curl}" "-fs" "http://localhost:8080/health" ];
+      interval = "3s";
+      timeout = "3s";
+      startPeriod = "10s";
+      retries = 10;
+    };
+  };
+};
+```
+
 ### Additional resources
 
 Additional resources required by a service - such as a database or reverse proxy
@@ -413,6 +441,13 @@ Inspect container image:
 
 podman load < <service-name>.tar
 podman inspect localhost/<service-name>
+```
+
+Inspect a running container:
+
+```bash
+nix run .#apps.<app-name>.container
+podman inspect <app-name>_<TAB>
 ```
 
 Inspect service in a running container:

@@ -306,26 +306,69 @@
           lib.attrNames app.services.resources
         );
 
-        serviceComponents = lib.mapAttrs (name: service: {
-          image = "localhost/${app.name}-${name}:${config.result.images.${name}.tag}";
-          ports = service.process.ports;
-          depends_on = lib.genAttrs (service.dependsOn ++ backendResourceNames) (_name: {
-            condition = "service_started";
-          });
-          tmpfs = [
-            "/tmp:rw,size=64m"
-            "/run:rw,size=64m"
+        dependsOnCondition =
+          depName:
+          if lib.hasAttr depName app.services.resources then
+            "service_healthy"
+          else if app.services.components.${depName}.healthcheck.enable then
+            "service_healthy"
+          else
+            "service_started";
+
+        serviceComponents = lib.mapAttrs (
+          name: service:
+          {
+            image = "localhost/${app.name}-${name}:${config.result.images.${name}.tag}";
+            ports = service.process.ports;
+            depends_on = lib.genAttrs (service.dependsOn ++ backendResourceNames) (depName: {
+              condition = dependsOnCondition depName;
+            });
+            tmpfs = [
+              "/tmp:rw,size=64m"
+              "/run:rw,size=64m"
+            ];
+            volumes = [ "${name}-data:${service.process.stateDir}" ];
+            labels = [ "ngi-forge.type=component" ];
+          }
+          // lib.optionalAttrs service.healthcheck.enable {
+            healthcheck = {
+              test = [ "CMD" ] ++ service.healthcheck.test;
+              interval = service.healthcheck.interval;
+              timeout = service.healthcheck.timeout;
+              start_period = service.healthcheck.startPeriod;
+              retries = service.healthcheck.retries;
+            };
+          }
+        ) app.services.components;
+
+        resourceDefaultHealthcheck = {
+          test = [
+            # Check for system reaching multi-user target and make sure that no
+            # unit is failing
+            "CMD-SHELL"
+            ''
+              if systemctl is-active --quiet multi-user.target \
+                && [ "$(systemctl list-units --state failed --output json)" = "[]" ]; then
+                logger "Healthcheck: OK"
+                exit 0
+              else
+                logger "Healthcheck: FAILED"
+                exit 1
+              fi
+            ''
           ];
-          volumes = [ "${name}-data:${service.process.stateDir}" ];
-          labels = [ "ngi-forge.type=component" ];
-        }) app.services.components;
+          interval = "5s";
+          timeout = "5s";
+          start_period = "30s";
+          retries = 10;
+        };
 
         resourcesComponents = lib.mapAttrs (name: resource: {
           image = "localhost/${app.name}-${name}:${config.result.images.${name}.tag}";
           ports = resource.ports;
           depends_on = lib.optionalAttrs (lib.hasAttr name frontendResourceDeps) (
-            lib.genAttrs frontendResourceDeps.${name} (_: {
-              condition = "service_started";
+            lib.genAttrs frontendResourceDeps.${name} (depName: {
+              condition = dependsOnCondition depName;
             })
           );
           tmpfs = [
@@ -337,6 +380,7 @@
           stop_signal = "SIGRTMIN+3";
           stop_grace_period = "30s";
           labels = [ "ngi-forge.type=resource" ];
+          healthcheck = resourceDefaultHealthcheck;
         }) app.services.resources;
 
         composeFile = pkgs.writeText "${app.name}-compose.yaml" (
