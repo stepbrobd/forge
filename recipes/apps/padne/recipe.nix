@@ -64,7 +64,7 @@
       packages = with pkgs; [
         padne
         (python3.withPackages (ps: [
-          pkgs.python3-padne
+          pkgs.python3Packages.padne
         ]))
       ];
 

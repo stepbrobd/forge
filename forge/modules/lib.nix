@@ -9,26 +9,55 @@
     # (eg. `nix build .#pkgs.${packageName}`).
     # This relies on the Nix completion not quoting attrset keys containing
     # a dot.
+    # `derivations` may nest: an attribute holding an attribute set of
+    # derivations is a scope, and is namespaced the same way one level down
+    # (eg. `nix build .#pkgs.ocamlPackages.h3`).
     flakePackagesWithNamespace =
       { namespace, derivations }:
       { linkFarm, stdenv }:
       let
-        bundle = linkFarm namespace (
-          lib.mapAttrsToList (name: path: {
-            inherit name path;
-          }) derivations
-        );
-      in
-      {
-        packages = {
-          ${namespace} = derivations // {
-            all = bundle;
-            name = namespace;
+        flatten =
+          prefix: tree:
+          lib.concatMapAttrs (
+            name: value:
+            let
+              key = if prefix == "" then name else "${prefix}.${name}";
+            in
+            if lib.isDerivation value then { ${key} = value; } else flatten key value
+          ) tree;
+
+        flat = flatten "" derivations;
+
+        bundle =
+          name: tree:
+          linkFarm name (
+            lib.mapAttrsToList (name: path: {
+              inherit name path;
+            }) (flatten "" tree)
+          );
+
+        # every level looks like a derivation so that the Nix CLI keeps
+        # completing through it
+        namespaced =
+          path: tree:
+          let
+            name = lib.concatStringsSep "." path;
+          in
+          lib.mapAttrs (
+            child: value: if lib.isDerivation value then value else namespaced (path ++ [ child ]) value
+          ) tree
+          // {
+            all = bundle name tree;
+            inherit name;
             type = "derivation";
             inherit (stdenv.hostPlatform) system;
           };
+      in
+      {
+        packages = {
+          ${namespace} = namespaced [ namespace ] derivations;
         }
-        // lib.mapAttrs' (name: lib.nameValuePair "${namespace}.${name}") derivations;
+        // lib.mapAttrs' (name: lib.nameValuePair "${namespace}.${name}") flat;
 
         legacyPackages = {
           # Tip(debugging): use this when not using the Flake setup (`nix repl -f.`)

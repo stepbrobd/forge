@@ -5,10 +5,10 @@
   ...
 }:
 
-let
-  ocamlPackages = pkgs.ocaml-ng.ocamlPackages.overrideScope (
-    _: prev: {
-      ssl = prev.ssl.overrideAttrs {
+{
+  scopes.ocamlPackages.overlays = [
+    (_: previous: {
+      ssl = previous.ssl.overrideAttrs {
         src = pkgs.fetchFromGitHub {
           owner = "savonet";
           repo = "ocaml-ssl";
@@ -17,7 +17,7 @@ let
         };
       };
 
-      tls = prev.tls.overrideAttrs {
+      tls = previous.tls.overrideAttrs {
         src = pkgs.fetchFromGitHub {
           owner = "anmonteiro";
           repo = "ocaml-tls";
@@ -25,11 +25,10 @@ let
           hash = "sha256-nKAqSI4JHfgAxd+UQrtW/FZIPI7XC0YOycG/j1AZoxU=";
         };
       };
-    }
-  );
-in
-{
-  pkgs.quic = {
+    })
+  ];
+
+  pkgs.ocamlPackages.quic = {
     version = "0-unstable-2026-03-16";
     description = "Implement QUIC/QUIC-TLS/QPACK and HTTP/3 in OCAML.";
     homePage = "https://github.com/anmonteiro/ocaml-quic";
@@ -43,17 +42,15 @@ in
     build.ocamlBuilder = {
       enable = true;
 
-      ocamlPackages = _: ocamlPackages;
-
       packages = {
         build = [ pkgs.pkg-config ];
 
         run = [
-          ocamlPackages.dune-configurator
+          pkgs.ocamlPackages.dune-configurator
           pkgs.openssl
         ];
 
-        dependencies = with ocamlPackages; [
+        dependencies = with pkgs.ocamlPackages; [
           digestif
           faraday
           hex
@@ -68,9 +65,9 @@ in
     };
   };
 
-  pkgs.qpack = {
+  pkgs.ocamlPackages.qpack = {
     description = "QPACK header compression for HTTP/3 in OCaml.";
-    inherit (config.pkgs.quic)
+    inherit (config.pkgs.ocamlPackages.quic)
       source
       version
       homePage
@@ -79,7 +76,7 @@ in
 
     build.ocamlBuilder = {
       enable = true;
-      packages.dependencies = with ocamlPackages; [
+      packages.dependencies = with pkgs.ocamlPackages; [
         angstrom
         faraday
         psq
@@ -87,9 +84,9 @@ in
     };
   };
 
-  pkgs.h3 = {
+  pkgs.ocamlPackages.h3 = {
     description = "HTTP/3 implementation in OCaml.";
-    inherit (config.pkgs.quic)
+    inherit (config.pkgs.ocamlPackages.quic)
       source
       version
       homePage
@@ -98,20 +95,19 @@ in
 
     build.ocamlBuilder = {
       enable = true;
-      packages.dependencies = with ocamlPackages; [
+      packages.dependencies = with pkgs.ocamlPackages; [
         angstrom
         faraday
         httpaf
-
-        pkgs.qpack
-        pkgs.quic
+        qpack
+        quic
       ];
     };
   };
 
-  pkgs.quic-lwt = {
+  pkgs.ocamlPackages.quic-lwt = {
     description = "Lwt runtime for the OCaml QUIC implementation.";
-    inherit (config.pkgs.quic)
+    inherit (config.pkgs.ocamlPackages.quic)
       source
       version
       homePage
@@ -120,19 +116,18 @@ in
 
     build.ocamlBuilder = {
       enable = true;
-      packages.dependencies = with ocamlPackages; [
+      packages.dependencies = with pkgs.ocamlPackages; [
         hex
         lwt
         gluten
-
-        pkgs.quic
+        quic
       ];
     };
   };
 
-  pkgs.quic-eio = {
+  pkgs.ocamlPackages.quic-eio = {
     description = "Eio runtime for the OCaml QUIC implementation.";
-    inherit (config.pkgs.quic)
+    inherit (config.pkgs.ocamlPackages.quic)
       source
       version
       homePage
@@ -141,13 +136,12 @@ in
 
     build.ocamlBuilder = {
       enable = true;
-      packages.dependencies = with ocamlPackages; [
+      packages.dependencies = with pkgs.ocamlPackages; [
         eio
         eio_posix
         gluten-eio
         hex
-
-        pkgs.quic
+        quic
       ];
     };
   };

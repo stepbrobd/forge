@@ -14,23 +14,13 @@
       Uses `buildDunePackage` from Nixpkgs, which builds OCaml packages with
       Dune and installs them through findlib.
 
+      A package declared under an OCaml scope (eg. `pkgs.ocamlPackages.h3`)
+      builds against that scope. A package declared outside any scope builds
+      against `pkgs.ocamlPackages`.
+
       For more information, see the
       [Nixpkgs OCaml documentation](https://nixos.org/manual/nixpkgs/unstable/#sec-language-ocaml)
     '';
-
-    ocamlPackages = lib.mkOption {
-      type = lib.types.functionTo lib.types.attrs;
-      default = pkgs: pkgs.ocaml-ng.ocamlPackages;
-      defaultText = lib.literalExpression "pkgs: pkgs.ocaml-ng.ocamlPackages";
-      description = ''
-        The OCaml package scope providing the builder and the dependencies.
-
-        Override to build against a different OCaml compiler version. All
-        dependencies must be taken from the same scope, otherwise they are
-        compiled for an incompatible compiler version.
-      '';
-      example = lib.literalExpression "pkgs: pkgs.ocaml-ng.ocamlPackages_latest";
-    };
 
     minimalVersion = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
@@ -58,7 +48,7 @@
 
           Mapped to `propagatedBuildInputs`.
         '';
-        example = lib.literalExpression "with pkgs.ocaml-ng.ocamlPackages; [ menhirLib yojson ]";
+        example = lib.literalExpression "with pkgs.ocamlPackages; [ menhirLib yojson ]";
       };
     };
   };

@@ -1,17 +1,24 @@
 {
-  config,
   lib,
   pkgs,
+  scope,
+  scopeName,
   packageBuilderModule,
   ...
 }:
+
+let
+  # a scoped package builds against its own scope, so every dependency it
+  # resolves comes from the same OCaml compiler
+  ocamlPackages = if scopeName == null then pkgs.ocamlPackages else scope;
+in
 
 {
   imports = [
     (packageBuilderModule {
       name = "ocamlBuilder";
       imports = ./options.nix;
-      mkDerivation = (config.build.ocamlBuilder.ocamlPackages pkgs).buildDunePackage;
+      mkDerivation = ocamlPackages.buildDunePackage;
       attrs =
         builder: finalAttrs: previousAttrs:
         {

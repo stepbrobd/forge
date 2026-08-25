@@ -1,6 +1,7 @@
 {
   lib,
   name,
+  scopePath,
   specialArgs,
   ...
 }:
@@ -18,6 +19,7 @@
     ../recipe-metadata.nix
   ];
   config._recipeType = "pkgs";
+  config._recipeScope = scopePath;
   options = {
     pname = lib.mkOption {
       type = lib.types.strMatching "^[a-zA-Z0-9-]+$";
@@ -27,11 +29,19 @@
       readOnly = true;
       internal = true;
     };
+    scopePath = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = scopePath;
+      description = "Scope this package belongs to, empty when the package is not scoped.";
+      example = lib.literalExpression ''[ "ocamlPackages" ]'';
+      readOnly = true;
+      internal = true;
+    };
     outputName = lib.mkOption {
       type = lib.types.str;
-      default = "pkgs.${name}";
+      default = lib.concatStringsSep "." ([ "pkgs" ] ++ scopePath ++ [ name ]);
       description = "Output name.";
-      example = "pkgs.hello";
+      example = "pkgs.ocamlPackages.h3";
       readOnly = true;
       internal = true;
     };

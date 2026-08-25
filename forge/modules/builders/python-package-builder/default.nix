@@ -1,14 +1,23 @@
 {
   pkgs,
+  scope,
+  scopeName,
   packageBuilderModule,
   ...
 }:
+
+let
+  # a scoped package builds against its own scope, so every dependency it
+  # resolves comes from the same interpreter
+  pythonPackages = if scopeName == null then pkgs.python3Packages else scope;
+in
+
 {
   imports = [
     (packageBuilderModule {
       name = "pythonPackageBuilder";
       imports = ./options.nix;
-      mkDerivation = pkgs.python3Packages.buildPythonPackage;
+      mkDerivation = pythonPackages.buildPythonPackage;
       attrs = builder: finalAttrs: previousAttrs: {
         format = "pyproject";
         inherit (builder)

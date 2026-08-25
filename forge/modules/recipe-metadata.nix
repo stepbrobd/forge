@@ -18,12 +18,25 @@
       description = "Internal type to distinguish between apps and pkgs for metadata resolution.";
     };
 
+    _recipeScope = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      internal = true;
+      description = "Attribute path of the enclosing scope, empty for unscoped recipes.";
+    };
+
     recipePath = lib.mkOption {
       type = lib.types.str;
       default =
         let
+          # a definition carries a position only for the recipes it declares,
+          # `abort` from getAttrFromPath is not catchable so attrByPath is used
           locs = map (
-            def: builtins.unsafeGetAttrPos name def.value
+            def:
+            let
+              enclosing = lib.attrByPath config._recipeScope null def.value;
+            in
+            if enclosing == null then null else builtins.unsafeGetAttrPos name enclosing
           ) specialArgs.forgeOptions.${config._recipeType}.definitionsWithLocations;
           validLocs = builtins.filter (loc: loc != null) locs;
           absPath = if validLocs != [ ] then (builtins.head validLocs).file else "";

@@ -9,6 +9,8 @@
 }:
 
 let
+  scoping = import ./modules/pkgs/scopes.nix { inherit lib; };
+
   evalForgeModules =
     modules:
     flake-parts-lib.evalFlakeModule {
@@ -26,7 +28,7 @@ let
         // {
           name = lib.removePrefix "perSystem.forge." opt.name;
           declarations = [ ];
-          visible = lib.match ("^perSystem\\.forge\\.(apps|pkgs)(\\..+)?") opt.name != null;
+          visible = lib.match ("^perSystem\\.forge\\.(apps|pkgs|scopes)(\\..+)?") opt.name != null;
         };
     };
 
@@ -46,8 +48,21 @@ let
     )}
   '';
 
+  # TODO(ui): the UI indexes packages by a flat name, so scoped packages are
+  # keyed by their qualified name (eg. `ocamlPackages.h3`) until it grows a
+  # scope-aware model.
   forgeConfig = config.forge // {
-    pkgs = lib.filterAttrs (_: pkg: !pkg.broken) config.forge.pkgs;
+    pkgs = lib.listToAttrs (
+      map (recipe: lib.nameValuePair (lib.concatStringsSep "." recipe.path) recipe.package) (
+        lib.filter (recipe: !recipe.package.broken) (
+          scoping.flatten {
+            baseSet = pkgs;
+            declared = config.forge.scopes;
+            tree = config.forge.pkgs;
+          }
+        )
+      )
+    );
     apps = lib.filterAttrs (_: app: !app.broken) config.forge.apps;
   };
 
